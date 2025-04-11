@@ -21,12 +21,11 @@ WHERE value = %s""", self.cedula)
 
             if result == None:
                 raise Exception("Usuario invalido")
-            
-            # Comprobar hash de la cedula
-            if pwd_context.verify(self.cedula, result[0]):
-                return create_access_token({
-                    "sub": str(result[1]),
-                    "exp": self.expiration
-                })
             else:
-                raise Exception("Usuario invalido")
+                return create_access_token({
+                    "sub": str(result[0]),
+                    "name": result[1],
+                })
+
+class Invoice(BaseModel):
+    ...

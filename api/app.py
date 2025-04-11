@@ -1,10 +1,21 @@
-from fastapi import FastAPI, Response, status
+from fastapi import Depends, FastAPI, Response, status
+from fastapi.security import OAuth2PasswordBearer
 import models
 
 app = FastAPI(root_path="/v1")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/login")
+
+@app.get("/")
+def get_ping():
+    print("Hello world")
+
+    return {
+        "response": "Hello world"
+    }
+
 @app.get("/invoices")
-def invoices():
+def invoices(token: str = Depends(oauth2_scheme)):
     ...
 
 @app.get("/invoices/{id}")
