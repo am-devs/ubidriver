@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static final _baseUrl = Uri.parse("http://192.168.1.102:8084/v1");
+  String _token = "";
 
-  Future authenticate(String cedula) async {
+  Future<bool> authenticate(String cedula) async {
     var response = await http.post(
       Uri.parse("$_baseUrl/login"),
       headers: {"Content-Type": "application/json"},
@@ -12,6 +13,15 @@ class ApiService {
     );
 
     print(response.statusCode);
-    print(response.body);
+    
+    Map<String, dynamic> data = jsonDecode(response.body);
+
+    if(data.containsKey('error')) {
+      print(data);
+      return false;
+    } else {
+      _token = data["token"]!;
+      return true;
+    }
   }
 }
