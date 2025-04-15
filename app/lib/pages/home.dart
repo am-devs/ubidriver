@@ -11,40 +11,52 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<dynamic> _invoices = [];
   int _currentPage = 0;
-  int _pages = 0;
+  int _pages = 1;
+  static const _size = 10;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchData();
+    });
+  }
+
+  _fetchData() async {
+    try {
+      var result = await Provider.of<ApiService>(context, listen: false).get("invoices");
+
+      setState(() {
+        _invoices.addAll(result);
+        _pages = (result.length / _size).ceil();
+      });
+    } catch(e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    var service = context.read<ApiService>();
-    const size = 10;
+    List<dynamic> slice = [];
+
+    if (_invoices.isNotEmpty) {
+      slice = _invoices.sublist(
+        _currentPage * _size,
+        (_currentPage * _size + _size).clamp(0, _invoices.length),
+      );
+    }
 
     return Scaffold(
       body: Column(
         children: [
           Expanded(
-            child: FutureBuilder(
-              future: service.get("invoices"),
-              builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
-                  _pages = (snapshot.data!.length / size).ceil(); // Usa ceil en lugar de round para redondear hacia arriba
-                  var slice = snapshot.data!.sublist(
-                    _currentPage * size,
-                    (_currentPage * size + size).clamp(0, snapshot.data!.length), // Agregado clamp para evitar errores de rango
-                  );
-
-                  return ListView.builder(
-                    itemCount: slice.length,
-                    itemBuilder: (context, index) {
-                      return Text("Invoice ${slice[index]['customer_name']}");
-                    },
-                  );
-                } else if (snapshot.hasError) {
-                  print("Error invoices: ${snapshot.error}");
-                  return const Text("Error al cargar los datos");
-                }
-
-                return const Center(child: CircularProgressIndicator());
+            child: ListView.builder(
+              itemCount: slice.length,
+              itemBuilder: (context, index) {
+                return Text("Invoice ${slice[index]['customer_name']}");
               },
             )
           ),

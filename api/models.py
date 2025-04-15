@@ -60,8 +60,7 @@ JOIN C_DocBaseType as baset on ctype.C_DocBaseType_ID = baset.C_DocBaseType_ID
 WHERE ci.docstatus = 'CO'
     AND et.FTA_Driver_ID = %s 
 	AND baset.DocBaseType ='ARI'
-	AND ci.Dateacct > '2025-01-01'
-""", driver_id)
+	AND ci.Dateacct > '2025-01-01'""", driver_id)
             
             invoices = []
 
