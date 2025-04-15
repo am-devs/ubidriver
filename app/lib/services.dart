@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static final _baseUrl = Uri.parse("http://192.168.1.218:8084/v1");
+  static final _baseUrl = Uri.parse("http://192.168.1.222:8084/v1");
   String _token = "";
 
   Future<bool> authenticate(String cedula) async {
