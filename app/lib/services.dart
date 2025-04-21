@@ -24,7 +24,7 @@ class ApiService {
     }
   }
 
-  Future<List> get(String route) async {
+  Future<T> get<T>(String route) async {
     var response = await http.get(
       Uri.parse("$_baseUrl/$route"),
       headers: {"Content-Type": "application/json", "Authorization": "Bearer $_token"}
@@ -37,7 +37,7 @@ class ApiService {
     } else {
       print("Data: $data");
 
-      return data as List;
+      return data;
     }
   }
 }

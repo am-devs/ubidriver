@@ -1,7 +1,27 @@
+import 'package:driver_return/models.dart';
 import 'package:driver_return/services.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+
+class _InvoiceTile extends StatelessWidget {
+  final Invoice invoice;
+
+  const _InvoiceTile(this.invoice);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        title: Text(invoice.code),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(invoice.customer.name),
+            Text(invoice.organization, style: const TextStyle(fontSize: 12)),
+          ]),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,7 +31,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<dynamic> _invoices = [];
+  List<Invoice> _invoices = [];
   int _currentPage = 0;
   int _pages = 1;
   static const _size = 10;
@@ -27,10 +47,11 @@ class _HomePageState extends State<HomePage> {
 
   _fetchData() async {
     try {
-      var result = await Provider.of<ApiService>(context, listen: false).get("invoices");
+      var result = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("invoices");
 
       setState(() {
-        _invoices.addAll(result);
+        _invoices.addAll(result.map((json) => Invoice.fromJson(json)));
+        print(result.length);
         _pages = (result.length / _size).ceil();
       });
     } catch(e) {
@@ -40,23 +61,33 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> slice = [];
+    List<Invoice> slice = [];
 
     if (_invoices.isNotEmpty) {
+      final int start = _currentPage * _size;
+
       slice = _invoices.sublist(
-        _currentPage * _size,
-        (_currentPage * _size + _size).clamp(0, _invoices.length),
+        start,
+        (start + _size).clamp(0, _invoices.length),
       );
     }
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Chofer"),
+      ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
               itemCount: slice.length,
               itemBuilder: (context, index) {
-                return Text("Invoice ${slice[index]['customer_name']}");
+                return Column(
+                  children: [
+                    _InvoiceTile(slice[index]),
+                    const Divider(height: 0),
+                  ]
+                );
               },
             )
           ),
