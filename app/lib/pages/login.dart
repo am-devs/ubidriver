@@ -34,7 +34,6 @@ class _LoginFormState extends State<LoginForm> {
               var service = context.read<ApiService>();
               var result = await service.authenticate(myController.text);
 
-              print("Result: $result");
               if(result && context.mounted) {
                 Navigator.pushNamed(context, '/home');
               }

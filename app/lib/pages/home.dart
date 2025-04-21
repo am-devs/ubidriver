@@ -12,6 +12,9 @@ class _InvoiceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+        onTap: () {
+          Navigator.pushNamed(context, '/home');
+        },
         title: Text(invoice.code),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,6 +51,8 @@ class _HomePageState extends State<HomePage> {
   _fetchData() async {
     try {
       var result = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("invoices");
+
+      print(result);
 
       setState(() {
         _invoices.addAll(result.map((json) => Invoice.fromJson(json)));
