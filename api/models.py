@@ -28,6 +28,42 @@ WHERE value = %s""", self.cedula)
                     "name": result[1],
                 })
 
+class Product(BaseModel):
+    id: int
+    name: str
+
+class InvoiceLine(BaseModel):
+    line_id: int
+    product: Product
+    quantity: float
+
+    @staticmethod
+    def get_for_multiple_invoices(db: Database, ids: list[int]):
+        data = {i: [] for i in ids}
+
+        db.execute("""
+SELECT 
+    cil.c_invoiceline_id,
+	cil.qtyinvoiced,
+	mp.m_product_id,
+	mp.name,
+    ci.c_invoice_id
+FROM c_invoice ci
+JOIN c_invoiceLine cil ON ci.c_invoice_id = cil.c_invoice_id
+JOIN m_product mp ON cil.m_product_id = mp.m_product_id
+WHERE ci.c_invoice_id = ANY(%s)""", ids)
+
+        for rec in db.fetchall():
+            line = InvoiceLine(
+                line_id=rec[0],
+                quantity=rec[1],
+                product=Product(id=rec[2], name=rec[3])
+            )
+            
+            data[rec[4]].append(line)
+
+        return data
+
 class Invoice(BaseModel):
     code: str
     date_invoice: datetime.date
@@ -35,6 +71,7 @@ class Invoice(BaseModel):
     organization: str 
     customer_name: str 
     customer_id: int
+    lines: list[InvoiceLine] = []
 
     @staticmethod
     def get_by_driver_id(driver_id: int):
@@ -62,16 +99,21 @@ WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
 	AND ci.Dateacct > '2025-01-01'""", driver_id)
             
-            invoices = []
+            invoices = {}
 
             for rec in db.fetchall():
-                invoices.append(Invoice(
+                invoices[rec[2]] = Invoice(
                     code=rec[0],
                     date_invoice=rec[1],
                     invoice_id=rec[2],
                     organization=rec[3],
                     customer_name=rec[4],
                     customer_id =rec[5],
-                ))
+                )
 
-            return invoices
+            lines = InvoiceLine.get_for_multiple_invoices(db, list(invoices.keys()))
+
+            for i in lines:
+                invoices[i].lines = lines[i]
+
+            return list(invoices.values())
