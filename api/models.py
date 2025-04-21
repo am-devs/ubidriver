@@ -36,6 +36,7 @@ class InvoiceLine(BaseModel):
     line_id: int
     product: Product
     quantity: float
+    uom: str
 
     @staticmethod
     def get_for_multiple_invoices(db: Database, ids: list[int]):
@@ -47,20 +48,23 @@ SELECT
 	cil.qtyinvoiced,
 	mp.m_product_id,
 	mp.name,
+    cu.name,
     ci.c_invoice_id
 FROM c_invoice ci
 JOIN c_invoiceLine cil ON ci.c_invoice_id = cil.c_invoice_id
 JOIN m_product mp ON cil.m_product_id = mp.m_product_id
+JOIN c_uom cu ON cu.c_uom_id = cil.c_uom_id
 WHERE ci.c_invoice_id = ANY(%s)""", ids)
 
         for rec in db.fetchall():
             line = InvoiceLine(
                 line_id=rec[0],
                 quantity=rec[1],
-                product=Product(id=rec[2], name=rec[3])
+                product=Product(id=rec[2], name=rec[3]),
+                uom=rec[4]
             )
             
-            data[rec[4]].append(line)
+            data[rec[5]].append(line)
 
         return data
 

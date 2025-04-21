@@ -1,5 +1,7 @@
 import 'package:driver_return/models.dart';
+import 'package:driver_return/pages/invoice.dart';
 import 'package:driver_return/services.dart';
+import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +15,7 @@ class _InvoiceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
         onTap: () {
-          Navigator.pushNamed(context, '/home');
+          Navigator.pushNamed(context, '/invoice', arguments: InvoiceArguments(invoice.id));
         },
         title: Text(invoice.code),
         subtitle: Column(
@@ -34,7 +36,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Invoice> _invoices = [];
   int _currentPage = 0;
   int _pages = 1;
   static const _size = 10;
@@ -52,11 +53,8 @@ class _HomePageState extends State<HomePage> {
     try {
       var result = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("invoices");
 
-      print(result);
-
       setState(() {
-        _invoices.addAll(result.map((json) => Invoice.fromJson(json)));
-        print(result.length);
+        Provider.of<InvoiceMap>(context, listen: false).initialize(result.map((json) => Invoice.fromJson(json)));
         _pages = (result.length / _size).ceil();
       });
     } catch(e) {
@@ -66,14 +64,15 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var invoices = Provider.of<InvoiceMap>(context, listen: false).toList();
     List<Invoice> slice = [];
 
-    if (_invoices.isNotEmpty) {
+    if (invoices.isNotEmpty) {
       final int start = _currentPage * _size;
 
-      slice = _invoices.sublist(
+      slice = invoices.sublist(
         start,
-        (start + _size).clamp(0, _invoices.length),
+        (start + _size).clamp(0, invoices.length),
       );
     }
 

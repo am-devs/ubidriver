@@ -15,12 +15,14 @@ class Product {
 class InvoiceLine {
   final Product product;
   final double quantity;
+  final String uom;
 
-  InvoiceLine({required this.product, required this.quantity});
+  InvoiceLine({required this.product, required this.quantity, required this.uom});
 
   InvoiceLine.fromJson(Map<String, dynamic> json)
     : product = Product(id: json["product"]["id"], name: json["product"]["name"] as String),
-      quantity = json["quantity"] as double;
+      quantity = json["quantity"] as double,
+      uom = json["uom"] as String;
 }
 
 class Invoice {
