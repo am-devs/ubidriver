@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE templates [
+<!ENTITY ad-credentials "
+<adin:ADLoginRequest>
+    <adin:user>dGarcia</adin:user>
+    <adin:pass>dGarcia</adin:pass>
+    <adin:lang>es_VE</adin:lang>
+    <adin:ClientID>1000000</adin:ClientID>
+    <adin:RoleID>1000000</adin:RoleID>
+    <adin:OrgID>0</adin:OrgID>
+    <adin:WarehouseID>0</adin:WarehouseID>
+    <adin:stage>0</adin:stage>
+</adin:ADLoginRequest>">
+]>
+<queries>
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:adin="http://3e.pl/ADInterface">
+        <soapenv:Header/>
+        <soapenv:Body>
+            <adin:updateData>
+                <adin:ModelCRUDRequest>
+                    <adin:ModelCRUD>
+                    <adin:serviceType>UpdateIsConfirmInvoice</adin:serviceType>
+                    <adin:RecordID></adin:RecordID>
+                    <adin:DataRow>
+                        <adin:field column="is_confirm">
+                            <adin:val>Y</adin:val>
+                        </adin:field>
+                            <adin:field column="ship_app">
+                            <adin:val></adin:val>
+                        </adin:field>
+                    </adin:DataRow>
+                    </adin:ModelCRUD>
+                    &ad-credentials;
+                </adin:ModelCRUDRequest>
+            </adin:updateData>
+        </soapenv:Body>
+    </soapenv:Envelope>
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:adin="http://3e.pl/ADInterface">
+        <soapenv:Header/>
+        <soapenv:Body>
+            <adin:queryData>
+                <adin:ModelCRUDRequest>
+                    <adin:ModelCRUD>
+                    <adin:serviceType>UpdateIsConfirmInOut</adin:serviceType>
+                    <adin:RecordID></adin:RecordID>
+                    <adin:DataRow>
+                        <adin:field column="is_confirm">
+                            <adin:val>Y</adin:val>
+                        </adin:field>
+                        <adin:field column="ship_app">
+                            <adin:val></adin:val>
+                        </adin:field>
+                    </adin:DataRow>
+                    </adin:ModelCRUD>
+                    &ad-credentials;
+                </adin:ModelCRUDRequest>
+            </adin:queryData>
+        </soapenv:Body>
+    </soapenv:Envelope>
+</queries>

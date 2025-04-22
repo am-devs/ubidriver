@@ -1,8 +1,10 @@
 import datetime
 from pydantic import BaseModel
-from database import Database
+from services import Database, sent_record_and_get_id
 from authentication import create_access_token
 from passlib.context import CryptContext
+from xml.dom.minidom import parse
+from templates import get_delivery_confirm_xml, get_invoice_confirm_xml
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -76,6 +78,18 @@ class Invoice(BaseModel):
     customer_name: str 
     customer_id: int
     lines: list[InvoiceLine] = []
+
+    @staticmethod
+    def confirm_invoice(invoice_id: int):
+        data = get_invoice_confirm_xml(invoice_id)
+
+        return sent_record_and_get_id(data)
+    
+    @staticmethod
+    def confirm_delivery(invoice_id: int):
+        data = get_delivery_confirm_xml(invoice_id)
+        
+        return sent_record_and_get_id(data)
 
     @staticmethod
     def get_by_driver_id(driver_id: int):
