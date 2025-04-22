@@ -28,11 +28,24 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         ),
         home: LoginPage(),
-        routes: {
-          '/login': (context) => LoginPage(),
-          '/home': (context) => HomePage(),
-          '/invoice': (context) => InvoicePage(),
-        },
+        onGenerateRoute: (settings) {
+          if (settings.name == '/invoice') {
+            final args = settings.arguments as InvoiceArguments;
+
+            return MaterialPageRoute(
+              builder: (context) => InvoicePage(args.id),
+            );
+          }
+
+          var routes = <String, WidgetBuilder> {
+            '/login': (context) => LoginPage(),
+            '/home': (context) => HomePage(),
+          };
+
+          WidgetBuilder builder = routes[settings.name]!;
+
+          return MaterialPageRoute(builder: (ctx) => builder(ctx));
+        }
       );
   }
 }

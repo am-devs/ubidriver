@@ -59,7 +59,7 @@ class ApiService {
     } else {
       print("Data: $data");
 
-      return data;
+      return data as T;
     }
   }
 }

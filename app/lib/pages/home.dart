@@ -53,7 +53,6 @@ class _HomePageState extends State<HomePage> {
     try {
       var result = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("invoices");
 
-
       setState(() {
         if(result.isEmpty) {
           return Navigator.of(context).pop();
