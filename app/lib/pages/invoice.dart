@@ -1,6 +1,7 @@
 import 'package:driver_return/models.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:provider/provider.dart';
 
 class InvoiceArguments {
@@ -10,6 +11,41 @@ class InvoiceArguments {
 }
 
 class InvoicePage extends StatelessWidget {
+  Widget _getFab() {
+    return ExpandableFab(
+        type: ExpandableFabType.up,
+        childrenAnimation: ExpandableFabAnimation.none,
+        distance: 70,
+        overlayStyle: ExpandableFabOverlayStyle(
+          color: Colors.white.withValues(alpha: 0.9),
+        ),
+        children: const [
+            Row(
+              children: [
+                Text('Confirmar'),
+                SizedBox(width: 20),
+                FloatingActionButton.small(
+                  heroTag: null,
+                  onPressed: null,
+                  child: Icon(Icons.check),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text('Retornar'),
+                SizedBox(width: 20),
+                FloatingActionButton.small(
+                  heroTag: null,
+                  onPressed: null,
+                  child: Icon(Icons.repeat_rounded),
+                ),
+              ],
+            ),
+        ],
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as InvoiceArguments;
@@ -77,7 +113,9 @@ class InvoicePage extends StatelessWidget {
           )
         ],
       ),
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: !invoice.confirm ? _getFab() : Container(),
     );
   }
-
+  
 }

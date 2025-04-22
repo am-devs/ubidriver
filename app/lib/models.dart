@@ -31,6 +31,7 @@ class Invoice {
   final int id;
   final String organization;
   final Customer customer;
+  bool confirm = false;
   List<InvoiceLine> lines = [];
 
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});

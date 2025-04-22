@@ -27,8 +27,30 @@ class ApiService {
   Future<T> get<T>(String route) async {
     var response = await http.get(
       Uri.parse("$_baseUrl/$route"),
-      headers: {"Content-Type": "application/json", "Authorization": "Bearer $_token"}
+      headers: {"Authorization": "Bearer $_token"}
     );
+
+    var data = jsonDecode(response.body);
+
+    if(data is Map && data.containsKey("error")) {
+      throw Exception(data);
+    } else {
+      print("Data: $data");
+
+      return data;
+    }
+  }
+
+  Future<T> post<T>(String route) async {
+    var response = await http.get(
+      Uri.parse("$_baseUrl/$route"),
+      headers: {"Authorization": "Bearer $_token"}
+    );
+
+    // Empty error response
+    if (response.bodyBytes.isEmpty && response.statusCode > 400) {
+      throw Exception("No se pudo postear nada");
+    }
 
     var data = jsonDecode(response.body);
 
