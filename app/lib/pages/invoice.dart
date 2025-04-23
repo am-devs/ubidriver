@@ -73,8 +73,8 @@ class InvoicePageState extends State<InvoicePage> {
     try {
       final service = Provider.of<ApiService>(context, listen: false);
       
-      await service.post<Map<String, int>>("/invoice/${widget.invoiceId}/confirm");
-      await service.post<Map<String, int>>("/invoice/${widget.invoiceId}/confirm-delivery");
+      await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm");
+      await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm-delivery");
 
       if(mounted) {
         Provider.of<InvoiceMap>(context, listen: false).remove(widget.invoiceId);

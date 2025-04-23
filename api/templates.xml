@@ -38,7 +38,7 @@
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:adin="http://3e.pl/ADInterface">
         <soapenv:Header/>
         <soapenv:Body>
-            <adin:queryData>
+            <adin:updateData>
                 <adin:ModelCRUDRequest>
                     <adin:ModelCRUD>
                     <adin:serviceType>UpdateIsConfirmInOut</adin:serviceType>
@@ -54,7 +54,7 @@
                     </adin:ModelCRUD>
                     &ad-credentials;
                 </adin:ModelCRUDRequest>
-            </adin:queryData>
+            </adin:updateData>
         </soapenv:Body>
     </soapenv:Envelope>
 </queries>

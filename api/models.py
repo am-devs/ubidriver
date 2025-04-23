@@ -4,7 +4,7 @@ from services import Database, sent_record_and_get_id
 from authentication import create_access_token
 from passlib.context import CryptContext
 from xml.dom.minidom import parse
-from templates import get_delivery_confirm_xml, get_invoice_confirm_xml
+from templates import get_deliveries_templates, get_invoice_confirm_xml
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -86,10 +86,33 @@ class Invoice(BaseModel):
         return sent_record_and_get_id(data)
     
     @staticmethod
-    def confirm_delivery(invoice_id: int):
-        data = get_delivery_confirm_xml(invoice_id)
+    def confirm_deliveries(invoice_id: int):
+        dels = {}
+
+        with Database() as db:
+            db.execute("""
+SELECT mi.M_InOut_ID
+FROM c_invoice as ci
+JOIN c_order co ON co.C_Order_ID = ci.C_Order_ID
+JOIN M_InOut mi ON mi.C_Order_ID = co.C_Order_ID
+WHERE ci.C_Invoice_ID = %s 
+AND (mi.is_confirm IS NULL OR mi.is_confirm='N')
+AND mi.docstatus='CO'""", invoice_id)
+            
+            dels.update({r[0]: False for r in db.fetchall()})
+
+        if not dels:
+            return {}
         
-        return sent_record_and_get_id(data)
+        templates = get_deliveries_templates(list(dels.keys()))
+
+        for temp in templates:
+            result = sent_record_and_get_id(temp)
+
+            if result in dels:
+                dels[result] = True 
+
+        return dels
 
     @staticmethod
     def get_by_driver_id(driver_id: int):
@@ -113,9 +136,8 @@ JOIN C_BPartner cb ON ci.C_BPartner_ID = cb.C_BPartner_ID
 JOIN C_DocType as ctype on ci.C_DocType_ID = ctype.C_DocType_ID
 JOIN C_DocBaseType as baset on ctype.C_DocBaseType_ID = baset.C_DocBaseType_ID
 WHERE ci.docstatus = 'CO'
-    AND et.FTA_Driver_ID = %s 
 	AND baset.DocBaseType ='ARI'
-	AND ci.Dateacct > '2025-01-01'""", driver_id)
+    AND et.FTA_Driver_ID = %s""", driver_id)
             
             invoices = {}
 

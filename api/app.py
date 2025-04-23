@@ -37,7 +37,7 @@ def invoices_id_confirm(id: int, response: Response, token: str = Depends(oauth2
     try:
         token = decode_token(token)
 
-        result = models.Invoice.confirm_delivery(id)
+        result = models.Invoice.confirm_invoice(id)
 
         if result:
             response.status_code = status.HTTP_201_CREATED
@@ -59,16 +59,14 @@ def invoices_id_confirm_delivery(id: int, response: Response, token: str = Depen
     try:
         token = decode_token(token)
 
-        result = models.Invoice.confirm_delivery(id)
+        result = models.Invoice.confirm_deliveries(id)
 
         if result:
-            response.status_code = status.HTTP_201_CREATED
+            response.status_code = status.HTTP_200_OK
 
-            return {
-                "record_id": result
-            }
+            return result
         else:
-            response.status_code = status.HTTP_400_BAD_REQUEST
+            response.status_code = status.HTTP_204_NO_CONTENT
     except Exception as e:
         response.status_code = status.HTTP_403_FORBIDDEN
 

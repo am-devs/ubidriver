@@ -42,7 +42,7 @@ class ApiService {
   }
 
   Future<T> post<T>(String route) async {
-    var response = await http.get(
+    var response = await http.post(
       Uri.parse("$_baseUrl/$route"),
       headers: {"Authorization": "Bearer $_token"}
     );
