@@ -3,8 +3,7 @@ from pydantic import BaseModel
 from services import Database, sent_record_and_get_id
 from authentication import create_access_token
 from passlib.context import CryptContext
-from xml.dom.minidom import parse
-from templates import get_deliveries_templates, get_invoice_confirm_xml
+import templates
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -81,7 +80,7 @@ class Invoice(BaseModel):
 
     @staticmethod
     def confirm_invoice(invoice_id: int):
-        data = get_invoice_confirm_xml(invoice_id)
+        data = templates.get_invoice_confirm_xml(invoice_id)
 
         return sent_record_and_get_id(data)
     
@@ -104,9 +103,9 @@ AND mi.docstatus='CO'""", invoice_id)
         if not dels:
             return {}
         
-        templates = get_deliveries_templates(list(dels.keys()))
+        data = templates.get_deliveries_templates(list(dels.keys()))
 
-        for temp in templates:
+        for temp in data:
             result = sent_record_and_get_id(temp)
 
             if result in dels:
@@ -137,6 +136,7 @@ JOIN C_DocType as ctype on ci.C_DocType_ID = ctype.C_DocType_ID
 JOIN C_DocBaseType as baset on ctype.C_DocBaseType_ID = baset.C_DocBaseType_ID
 WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
+    AND (ci.is_confirm !='Y' OR ci.is_confirm is NULL)
     AND et.FTA_Driver_ID = %s""", driver_id)
             
             invoices = {}
@@ -157,3 +157,31 @@ WHERE ci.docstatus = 'CO'
                 invoices[i].lines = lines[i]
 
             return list(invoices.values())
+        
+class Return(BaseModel):
+    c_bpartner_id: int
+
+    def create(self, driver_id: int, driver_name: str):
+        data = templates.get_return_order_template(
+            f"Orden creada por el chofer: {driver_name} ({driver_id})",
+            self.c_bpartner_id
+        )
+
+        return sent_record_and_get_id(data)
+    
+class ReturnLine(BaseModel):
+    product_id: int
+    quantity: int
+    reason: str
+
+def create_return_lines(order_id: int, records: list[ReturnLine]):
+    data = templates.get_return_line_template(order_id, records)
+    results = {r.product_id: 0 for r in records}
+
+    for pid, data in data.items():
+        result = sent_record_and_get_id(data)
+
+        if result:
+            results[pid] = result
+
+    return results

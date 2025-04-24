@@ -45,6 +45,37 @@ def get_deliveries_templates(ids: list[int]):
 
     return templates
 
+def get_return_order_template(description: str, bpartner: int):
+    element = _get_elements()[2]
+    doc = Document()
+
+    vals = element.getElementsByTagName("adin:val")
+
+    vals[0].appendChild(doc.createTextNode(description))
+    vals[1].appendChild(doc.createTextNode(int(bpartner)))
+
+    return element
+
+def get_return_line_template(order_id: int, lines: list[object]):
+    element = _get_elements()[3]
+    doc = Document()
+    templates = {}
+
+    for line in lines:
+        clone = element.cloneNode(True)
+        vals = clone.getElementsByTagName("adin:val")
+
+        vals[0].appendChild(doc.createTextNode(order_id))
+        vals[1].appendChild(doc.createTextNode(str(line.product_id)))
+        vals[2].appendChild(doc.createTextNode(str(line.quantity)))
+        vals[3].appendChild(doc.createTextNode(line.reason))
+
+        print(clone.toxml())
+
+        templates[line.product_id] = clone.toxml()
+
+    return templates
+
 def get_record_id_from_response(stream: str):
     doc = parseString(stream)
     record_id = 0

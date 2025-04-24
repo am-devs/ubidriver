@@ -74,9 +74,48 @@ def invoices_id_confirm_delivery(id: int, response: Response, token: str = Depen
             "error": str(e)
         }
 
-@app.post("/invoices/return")
-def invoices_return():
-    ...
+@app.post("/return")
+def invoices_return(data: models.Return, response: Response, token: str = Depends(oauth2_scheme)):
+    try:
+        token = decode_token(token)
+
+        result = data.create(int(token["sub"]), token["name"])
+
+        if result:
+            response.status_code = status.HTTP_201_CREATED
+
+            return {
+                "record_id": result
+            }
+        else:
+            response.status_code = status.HTTP_400_BAD_REQUEST
+    except Exception as e:
+        response.status_code = status.HTTP_403_FORBIDDEN
+
+        return {
+            "error": str(e)
+        }
+    
+@app.post("/return/{id}/lines")
+def invoices_return_lines(id: int, data: list[models.ReturnLine], response: Response, token: str = Depends(oauth2_scheme)):
+    try:
+        token = decode_token(token)
+
+        result = models.create_return_lines(id, data)
+
+        if result:
+            response.status_code = status.HTTP_201_CREATED
+
+            return result
+        else:
+            response.status_code = status.HTTP_400_BAD_REQUEST
+    except Exception as e:
+        response.status_code = status.HTTP_403_FORBIDDEN
+
+        return {
+            "error": str(e)
+        }
+    
 
 @app.get("/authorizations")
 def authorizations():
