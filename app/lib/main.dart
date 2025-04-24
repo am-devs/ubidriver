@@ -1,4 +1,5 @@
 import 'package:driver_return/pages/invoice.dart';
+import 'package:driver_return/pages/return.dart';
 import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
           var routes = <String, WidgetBuilder> {
             '/login': (context) => LoginPage(),
             '/home': (context) => HomePage(),
+            '/return': (context) => ReturnPage()
           };
 
           WidgetBuilder builder = routes[settings.name]!;
