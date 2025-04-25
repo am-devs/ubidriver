@@ -44,21 +44,25 @@ class ApiService {
   Future<T> post<T>(String route, { Object? body }) async {
     var response = await http.post(
       Uri.parse("$_baseUrl/$route"),
-      body: body == null ? jsonEncode(body) : null,
-      headers: {"Authorization": "Bearer $_token"}
+      body: body != null ? jsonEncode(body) : null,
+      headers: {"Authorization": "Bearer $_token", "Content-Type": "application/json"}
     );
+
+    print(jsonEncode(body));
 
     // Empty error response
     if (response.bodyBytes.isEmpty && response.statusCode > 400) {
       throw Exception("No se pudo postear nada");
     }
 
+    print(response.body);
+
     var data = jsonDecode(response.body);
 
-    if(data is Map && data.containsKey("error")) {
+    if(response.statusCode >= 400 || (data is Map && data.containsKey("error"))) {
       throw Exception(data);
     } else {
-      print("Data: $data");
+      print("Data: ${response.body}");
 
       return data as T;
     }

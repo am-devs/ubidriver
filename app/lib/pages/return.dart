@@ -20,11 +20,13 @@ class ReturnLineData {
   
   const ReturnLineData(this.productId, this.reason, this.quantity);
 
-  Map<String, dynamic> toMap() => {
-    "reason": reason,
-    "quantity": quantity,
-    "product_id": productId
-  };
+  Map<String, dynamic> toMap() {
+    return {
+      "reason": reason,
+      "quantity": quantity,
+      "product_id": productId
+    };
+  }
 }
 
 class _ReturnLine extends StatefulWidget {
@@ -63,7 +65,7 @@ class _ReturnLineState extends State<_ReturnLine> {
               onSelected: (String? value) {
                 setState(() {
                   reason = value!;
-                  widget.onDataChanged(ReturnLineData(widget._line.id, reason, quantity));
+                  widget.onDataChanged(ReturnLineData(widget._line.product.id, reason, quantity));
                 });
               },
               dropdownMenuEntries: menuEntries,
@@ -73,7 +75,7 @@ class _ReturnLineState extends State<_ReturnLine> {
               onChanged: (value) {
                 setState(() {
                   quantity = int.tryParse(value) ?? 0;
-                  widget.onDataChanged(ReturnLineData(widget._line.id, reason, quantity));
+                  widget.onDataChanged(ReturnLineData(widget._line.product.id, reason, quantity));
                 });
               },
             )

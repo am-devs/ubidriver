@@ -52,9 +52,9 @@ def get_return_order_template(description: str, bpartner: int):
     vals = element.getElementsByTagName("adin:val")
 
     vals[0].appendChild(doc.createTextNode(description))
-    vals[1].appendChild(doc.createTextNode(int(bpartner)))
+    vals[1].appendChild(doc.createTextNode(str(bpartner)))
 
-    return element
+    return element.toxml()
 
 def get_return_line_template(order_id: int, lines: list[object]):
     element = _get_elements()[3]
@@ -65,7 +65,7 @@ def get_return_line_template(order_id: int, lines: list[object]):
         clone = element.cloneNode(True)
         vals = clone.getElementsByTagName("adin:val")
 
-        vals[0].appendChild(doc.createTextNode(order_id))
+        vals[0].appendChild(doc.createTextNode(str(order_id)))
         vals[1].appendChild(doc.createTextNode(str(line.product_id)))
         vals[2].appendChild(doc.createTextNode(str(line.quantity)))
         vals[3].appendChild(doc.createTextNode(line.reason))
