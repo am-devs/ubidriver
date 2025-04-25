@@ -108,8 +108,9 @@ class InvoicePageState extends State<InvoicePage> {
     try {
       final service = Provider.of<ApiService>(context, listen: false);
       
-      await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm");
-      await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm-delivery");
+      await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm").then((_) =>
+        service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm-delivery")
+      );
 
       if(mounted) {
         Provider.of<InvoiceMap>(context, listen: false).remove(widget.invoiceId);
@@ -165,9 +166,9 @@ class InvoicePageState extends State<InvoicePage> {
               visible: _selectedLinesCount > 0,
               child: IconButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed("/return", arguments: ReturnPageArguments(
+                  Navigator.pushNamed(context, "/return", arguments: ReturnArguments(
                     _invoice!.customer.id,
-                    _invoice!.lines.where((l) => _selectedLines.containsKey(l.id)).toList()
+                    _invoice!.lines.where((l) => _selectedLines[l.id] == true).toList()
                   ));
                 },
                 icon: Icon(Icons.arrow_forward_rounded)

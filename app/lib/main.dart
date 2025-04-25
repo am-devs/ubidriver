@@ -36,12 +36,17 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => InvoicePage(args.id),
             );
+          } else if(settings.name == "/return") {
+            final args = settings.arguments as ReturnArguments;
+
+            return MaterialPageRoute(
+              builder: (context) => ReturnPage(args)
+            );
           }
 
           var routes = <String, WidgetBuilder> {
             '/login': (context) => LoginPage(),
             '/home': (context) => HomePage(),
-            '/return': (context) => ReturnPage()
           };
 
           WidgetBuilder builder = routes[settings.name]!;
