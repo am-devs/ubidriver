@@ -4,7 +4,6 @@ from authentication import decode_token
 import models
 
 app = FastAPI(root_path="/v1")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/login")
 
 @app.get("/")
@@ -114,8 +113,7 @@ def invoices_return_lines(id: int, data: list[models.ReturnLine], response: Resp
 
         return {
             "error": str(e)
-        }
-    
+        } 
 
 @app.get("/authorizations")
 def authorizations():

@@ -15,8 +15,8 @@ class Product {
 class InvoiceLine {
   final int id;
   final Product product;
-  final double quantity;
   final String uom;
+  double quantity;
 
   InvoiceLine({required this.id, required this.product, required this.quantity, required this.uom});
 
@@ -34,15 +34,31 @@ class Invoice {
   final String organization;
   final Customer customer;
   bool confirm = false;
-  List<InvoiceLine> lines = [];
+  Map<int, InvoiceLine> lines = {};
 
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
 
-  Invoice.fromJson(Map<String, dynamic> json) 
-    : code = json["code"] as String,
-      date = DateTime.parse(json['date_invoice'] as String),
-      id = json["invoice_id"] as int,
-      organization = json["organization"] as String,
-      customer = Customer(json["customer_name"] as String, json["customer_id"] as int),
-      lines = (json["lines"] as List).map((str) => InvoiceLine.fromJson(str)).toList();
+  factory Invoice.fromJson(Map<String, dynamic> json) {
+    var instance = Invoice(
+      code: json["code"] as String,
+      date: DateTime.parse(json['date_invoice'] as String),
+      id: json["invoice_id"] as int,
+      organization: json["organization"] as String,
+      customer: Customer(json["customer_name"] as String, json["customer_id"] as int),
+    );
+
+    for(var data in (json["lines"] as List)) {
+      var line = InvoiceLine.fromJson(data);
+
+      instance.lines[line.id] = line;
+    }
+
+    return instance;
+  }
+
+  void returnInvoice(Map<int, double> data) {
+    for(var MapEntry(key: id, value: quantity) in data.entries) {
+      lines[id]!.quantity -= quantity;
+    }
+  }
 }

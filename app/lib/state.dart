@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 class InvoiceMap extends ChangeNotifier {
   Map<int, Invoice> _invoices = {};
 
+  int get size => _invoices.length;
+
   void initialize(Iterable<Invoice> list) {
     if(_invoices.isNotEmpty) {
       _invoices.clear();

@@ -1,24 +1,27 @@
 import 'dart:collection';
 import 'package:driver_return/models.dart';
 import 'package:driver_return/services.dart';
+import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ReturnArguments {
+  final int invoiceId;
   final int bpartnerId;
   final List<InvoiceLine> lines;
 
-  ReturnArguments(this.bpartnerId, this.lines);
+  ReturnArguments({required this.bpartnerId, required this.lines, required this.invoiceId});
 }
 
 const List<String> reasons = ["Mercancia vencida", "Mercancía defectuosa"];
 
-class ReturnLineData {
+class _ReturnLineData {
+  final int lineId;
   final int productId;
   final String reason;
-  final int quantity;
+  final double quantity;
   
-  const ReturnLineData(this.productId, this.reason, this.quantity);
+  const _ReturnLineData(this.lineId, this.productId, this.reason, this.quantity);
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,7 +34,7 @@ class ReturnLineData {
 
 class _ReturnLine extends StatefulWidget {
   final InvoiceLine _line;
-  final Function(ReturnLineData) onDataChanged;
+  final Function(_ReturnLineData) onDataChanged;
   
   _ReturnLine(this._line, {required this.onDataChanged});
   
@@ -44,10 +47,12 @@ class _ReturnLineState extends State<_ReturnLine> {
     reasons.map<DropdownMenuEntry<String>>((name) => DropdownMenuEntry(value: name, label: name)),
   );
   String reason = reasons.first;
-  int quantity = 0;
+  double quantity = 0;
   
   @override
   Widget build(BuildContext context) {
+    var line = widget._line;
+
     return Card(
       child: Padding(
         padding: EdgeInsets.all(10),
@@ -56,8 +61,8 @@ class _ReturnLineState extends State<_ReturnLine> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(widget._line.product.name),
-                Text(widget._line.quantity.toString())
+                Text(line.product.name),
+                Text(line.quantity.toString())
               ],
             ),
             DropdownMenu<String>(
@@ -65,7 +70,7 @@ class _ReturnLineState extends State<_ReturnLine> {
               onSelected: (String? value) {
                 setState(() {
                   reason = value!;
-                  widget.onDataChanged(ReturnLineData(widget._line.product.id, reason, quantity));
+                  widget.onDataChanged(_ReturnLineData(line.id, line.product.id, reason, quantity));
                 });
               },
               dropdownMenuEntries: menuEntries,
@@ -74,8 +79,8 @@ class _ReturnLineState extends State<_ReturnLine> {
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 setState(() {
-                  quantity = int.tryParse(value) ?? 0;
-                  widget.onDataChanged(ReturnLineData(widget._line.product.id, reason, quantity));
+                  quantity = double.tryParse(value) ?? 0;
+                  widget.onDataChanged(_ReturnLineData(line.id, line.product.id, reason, quantity));
                 });
               },
             )
@@ -96,7 +101,7 @@ class ReturnPage extends StatefulWidget {
 }
 
 class _ReturnPageState extends State<ReturnPage> {
-  final Map<int, ReturnLineData> _returnData = {};
+  final Map<int, _ReturnLineData> _returnData = {};
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +112,7 @@ class _ReturnPageState extends State<ReturnPage> {
           l,
           onDataChanged: (data) {
             setState(() {
-              _returnData[data.productId] = data;
+              _returnData[data.lineId] = data;
             });
           },
         )).toList(),
@@ -123,9 +128,11 @@ class _ReturnPageState extends State<ReturnPage> {
               "return/${value["record_id"]}/lines", body: _returnData.values.map((l) => l.toMap()).toList()
             ));
 
-            print(result);
-
-            if(context.mounted) {
+            if(result.isNotEmpty && context.mounted) {
+              Provider.of<InvoiceMap>(context, listen: false).get(widget.args.invoiceId)?.returnInvoice({ 
+                for (var line in _returnData.values)
+                  line.lineId: line.quantity
+              });
               Navigator.of(context).pushNamed("/home");
             }
           } catch (e) {

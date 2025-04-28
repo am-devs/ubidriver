@@ -1,4 +1,6 @@
+import 'package:driver_return/models.dart';
 import 'package:driver_return/services.dart';
+import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,10 +33,15 @@ class _LoginFormState extends State<LoginForm> {
         ),
         ElevatedButton(
           onPressed: () async {
-              var service = context.read<ApiService>();
-              var result = await service.authenticate(myController.text);
+              final service = context.read<ApiService>();
+              final result = await service.authenticate(myController.text);
 
-              if(result && context.mounted) {
+              if(!result) return;
+
+              final invoices = await service.get<List<dynamic>>("invoices");
+
+              if(context.mounted) {
+                Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
                 Navigator.pushNamed(context, '/home');
               }
           },

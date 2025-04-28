@@ -36,39 +36,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static const _size = 10;
   int _currentPage = 0;
   int _pages = 1;
-  static const _size = 10;
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchData();
-    });
-  }
-
-  _fetchData() async {
-    try {
-      var result = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("invoices");
-
-      setState(() {
-        if(result.isEmpty) {
-          return Navigator.of(context).pop();
-        }
-
-        Provider.of<InvoiceMap>(context, listen: false).initialize(result.map((json) => Invoice.fromJson(json)));
-        _pages = (result.length / _size).ceil();
-      });
-    } catch(e) {
-      print(e);
-    }
+    _pages = (Provider.of<InvoiceMap>(context, listen: false).size / _size).ceil();
   }
 
   @override
   Widget build(BuildContext context) {
     var invoices = Provider.of<InvoiceMap>(context, listen: false).toList();
+    _pages = (invoices.length / _size).ceil();
     List<Invoice> slice = [];
 
     if (invoices.isNotEmpty) {

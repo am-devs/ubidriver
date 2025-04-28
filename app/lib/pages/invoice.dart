@@ -63,7 +63,7 @@ class InvoicePageState extends State<InvoicePage> {
     if (_isLoading) {
       setState(() {
         _invoice = Provider.of<InvoiceMap>(context, listen: false).get(widget.invoiceId);
-        _selectedLines.addAll({ for (var i in _invoice!.lines) i.id: false});
+        _selectedLines.addAll({ for (var i in _invoice!.lines.keys) i: false});
         _isLoading = false;
       });
     }
@@ -154,6 +154,8 @@ class InvoicePageState extends State<InvoicePage> {
       );
     }
 
+    final lines = _invoice!.lines.values.toList();
+
     return Scaffold(
       appBar: !_enabled
         ? defaultBar
@@ -167,8 +169,9 @@ class InvoicePageState extends State<InvoicePage> {
               child: IconButton(
                 onPressed: () {
                   Navigator.pushNamed(context, "/return", arguments: ReturnArguments(
-                    _invoice!.customer.id,
-                    _invoice!.lines.where((l) => _selectedLines[l.id] == true).toList()
+                    bpartnerId: _invoice!.customer.id,
+                    lines: lines.where((l) => _selectedLines[l.id] == true).toList(),
+                    invoiceId: _invoice!.id,
                   ));
                 },
                 icon: Icon(Icons.arrow_forward_rounded)
@@ -217,9 +220,9 @@ class InvoicePageState extends State<InvoicePage> {
           const Divider(height: 0,),
           Expanded(
             child: ListView.builder(
-              itemCount: _invoice!.lines.length,
+              itemCount: lines.length,
               itemBuilder: (context, index) {
-                final line = _invoice!.lines[index];
+                final line = lines[index];
 
                 return Column(
                   key: Key(line.id.toString()),
