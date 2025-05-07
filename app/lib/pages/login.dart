@@ -13,6 +13,7 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   final myController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -22,10 +23,15 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    if(_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
           child: TextField(
             controller: myController,
             decoration: InputDecoration(border: OutlineInputBorder(), labelText: "C.I"),
@@ -33,10 +39,20 @@ class _LoginFormState extends State<LoginForm> {
         ),
         ElevatedButton(
           onPressed: () async {
+              setState(() {
+                _isLoading = true;
+              });
+
               final service = context.read<ApiService>();
               final result = await service.authenticate(myController.text);
 
-              if(!result) return;
+              if(!result) {
+                setState(() {
+                  _isLoading = false;
+                });
+
+                return;
+              }
 
               final invoices = await service.get<List<dynamic>>("invoices");
 
@@ -56,7 +72,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LoginForm()
+      body: LoginForm(),
     );
   }
 }

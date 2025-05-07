@@ -16,7 +16,7 @@ class _InvoiceTile extends StatelessWidget {
     return ListTile(
         onTap: () {
           Navigator.pushNamed(context, '/invoice', arguments: InvoiceArguments(invoice.id));
-        },
+        },  
         title: Text(invoice.code),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,14 +81,17 @@ class _HomePageState extends State<HomePage> {
               },
             )
           ),
-          NumberPaginator(
-            numberPages: _pages,
-            onPageChange: (n) {
-              setState(() {
-                _currentPage = n;
-              });
-            },
-          ),
+          Padding(
+            padding: EdgeInsets.all(12),
+            child: NumberPaginator(
+              numberPages: _pages,
+              onPageChange: (n) {
+                setState(() {
+                  _currentPage = n;
+                });
+              },
+            ),
+          )
         ]
       )
     );

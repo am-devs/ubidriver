@@ -36,6 +36,10 @@ class _InvoiceLineWidget extends StatelessWidget {
       selected: _selected,
       onTap: _onTap,
       title: Text(_line.product.name),
+      leading: Visibility(
+        visible: _enabled,
+        child: Checkbox(value: _selected, onChanged: null,)
+      ),
       subtitle: Text("${_line.quantity} - ${_line.uom}"),
       textColor: WidgetStateColor.resolveWith((Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
