@@ -38,7 +38,17 @@ class _InvoiceLineWidget extends StatelessWidget {
       title: Text(_line.product.name),
       leading: Visibility(
         visible: _enabled,
-        child: Checkbox(value: _selected, onChanged: null,)
+        child: Checkbox(
+          value: _selected,
+          onChanged: null,
+          fillColor: WidgetStateColor.resolveWith((Set<WidgetState> state) {
+            if (state.contains(WidgetState.selected)) {
+              return Colors.primaries.first.shade500;
+            } else {
+              return Colors.transparent;
+            }
+          }),
+        )
       ),
       subtitle: Text("${_line.quantity} - ${_line.uom}"),
       textColor: WidgetStateColor.resolveWith((Set<WidgetState> states) {
@@ -149,7 +159,13 @@ class InvoicePageState extends State<InvoicePage> {
 
   @override
   Widget build(BuildContext context) {
-    final defaultBar = AppBar(title: const Text("Factura"));
+    final defaultBar = AppBar(
+      title: const Text("Factura", style: TextStyle(color: Colors.white),),
+      iconTheme: IconThemeData(
+        color: Colors.white
+      ),
+      backgroundColor: Theme.of(context).primaryColor,
+    );
 
     if (_isLoading || _invoice == null) {
       return Scaffold(
@@ -164,6 +180,7 @@ class InvoicePageState extends State<InvoicePage> {
       appBar: !_enabled
         ? defaultBar
         : AppBar(
+          backgroundColor: Theme.of(context).primaryColorLight,
           title: Text("$_selectedLinesCount lineas seleccionadas"),
           leading: IconButton(onPressed: _disable, icon: Icon(Icons.close)),
           centerTitle: true,
@@ -186,12 +203,7 @@ class InvoicePageState extends State<InvoicePage> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 0,
-              bottom: 10
-            ), 
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20), 
             child: Column(
               children: [
                 Row(

@@ -53,19 +53,37 @@ class _ReturnLineState extends State<_ReturnLine> {
   Widget build(BuildContext context) {
     var line = widget._line;
 
+    final texts = Theme.of(context).textTheme;
+
     return Card(
       child: Padding(
         padding: EdgeInsets.all(10),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 16,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(line.product.name),
-                Text(line.quantity.toString())
+                Text(
+                  line.product.name,
+                  style: texts.titleMedium
+                ),
+                Text(
+                  line.quantity.toString(),
+                  style: texts.titleSmall,
+                )
               ],
             ),
             DropdownMenu<String>(
+              inputDecorationTheme: InputDecorationTheme(
+                contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                border: OutlineInputBorder(),
+                constraints: BoxConstraints.tight(const Size.fromHeight(45))
+              ),
+              textStyle: TextStyle(
+                fontSize: 14
+              ),
               initialSelection: reasons.first,
               onSelected: (String? value) {
                 setState(() {
@@ -76,6 +94,10 @@ class _ReturnLineState extends State<_ReturnLine> {
               dropdownMenuEntries: menuEntries,
             ),
             TextField(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Cantidad a retornar'
+              ),
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 setState(() {
@@ -107,15 +129,18 @@ class _ReturnPageState extends State<ReturnPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Devolución")),
-      body: ListView(
-        children: widget.args.lines.map((l) => _ReturnLine(
-          l,
-          onDataChanged: (data) {
-            setState(() {
-              _returnData[data.lineId] = data;
-            });
-          },
-        )).toList(),
+      body: Padding(
+        padding: EdgeInsets.all(12),
+        child: ListView(
+          children: widget.args.lines.map((l) => _ReturnLine(
+            l,
+            onDataChanged: (data) {
+              setState(() {
+                _returnData[data.lineId] = data;
+              });
+            },
+          )).toList(),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

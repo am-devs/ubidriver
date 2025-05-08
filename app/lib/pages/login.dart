@@ -11,6 +11,11 @@ class LoginForm extends StatefulWidget {
   State<LoginForm> createState() => _LoginFormState();
 }
 
+final class _InvalidUserException implements Exception {
+  @override
+  String toString() => 'Usuario inválido';
+}
+
 class _LoginFormState extends State<LoginForm> {
   final myController = TextEditingController();
   bool _isLoading = false;
@@ -44,21 +49,30 @@ class _LoginFormState extends State<LoginForm> {
               });
 
               final service = context.read<ApiService>();
-              final result = await service.authenticate(myController.text);
 
-              if(!result) {
+              try {
+                final result = await service.authenticate(myController.text);
+
+                if(!result) throw _InvalidUserException();
+
+                final invoices = await service.get<List<dynamic>>("invoices");
+
+                if(context.mounted) {
+                  Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
+                  Navigator.pushNamed(context, '/home');
+                }
+              } catch(e) {
+                print(e);
+
+                if(context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Ocurrió un error: $e'),
+                  ));
+                }
+              } finally {
                 setState(() {
                   _isLoading = false;
                 });
-
-                return;
-              }
-
-              final invoices = await service.get<List<dynamic>>("invoices");
-
-              if(context.mounted) {
-                Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
-                Navigator.pushNamed(context, '/home');
               }
           },
           child: const Text("Iniciar sesión"),

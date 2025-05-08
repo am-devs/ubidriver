@@ -10,7 +10,7 @@ class ApiService {
       Uri.parse("$_baseUrl/login"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({'cedula': cedula}),
-    );
+    ).timeout(const Duration(seconds: 10));
 
     Map<String, dynamic> data = jsonDecode(response.body);
 
@@ -28,7 +28,7 @@ class ApiService {
     var response = await http.get(
       Uri.parse("$_baseUrl/$route"),
       headers: {"Authorization": "Bearer $_token"}
-    );
+    ).timeout(const Duration(seconds: 10));
 
     var data = jsonDecode(response.body);
 
@@ -46,7 +46,7 @@ class ApiService {
       Uri.parse("$_baseUrl/$route"),
       body: body != null ? jsonEncode(body) : null,
       headers: {"Authorization": "Bearer $_token", "Content-Type": "application/json"}
-    );
+    ).timeout(const Duration(seconds: 10));
 
     print(jsonEncode(body));
 
