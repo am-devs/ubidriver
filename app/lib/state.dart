@@ -1,6 +1,8 @@
 import 'package:driver_return/models.dart';
 import 'package:flutter/material.dart';
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 class InvoiceMap extends ChangeNotifier {
   Map<int, Invoice> _invoices = {};
 

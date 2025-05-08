@@ -43,7 +43,7 @@ class _InvoiceLineWidget extends StatelessWidget {
           onChanged: null,
           fillColor: WidgetStateColor.resolveWith((Set<WidgetState> state) {
             if (state.contains(WidgetState.selected)) {
-              return Colors.primaries.first.shade500;
+              return Theme.of(context).primaryColor;
             } else {
               return Colors.transparent;
             }
@@ -53,7 +53,7 @@ class _InvoiceLineWidget extends StatelessWidget {
       subtitle: Text("${_line.quantity} - ${_line.uom}"),
       textColor: WidgetStateColor.resolveWith((Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
-          return Colors.primaries.first.shade500;
+          return Theme.of(context).primaryColor;
         } else {
           return Colors.black;
         }

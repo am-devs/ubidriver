@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        scaffoldMessengerKey: scaffoldMessengerKey,
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
