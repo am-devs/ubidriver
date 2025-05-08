@@ -1,6 +1,5 @@
 import 'package:driver_return/models.dart';
 import 'package:driver_return/pages/invoice.dart';
-import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
@@ -36,27 +35,31 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late List<Invoice> _invoices = [];
   static const _size = 10;
   int _currentPage = 0;
-  int _pages = 1;
+  String _pattern = "";
 
   @override
   void initState() {
     super.initState();
 
-    _pages = (Provider.of<InvoiceMap>(context, listen: false).size / _size).ceil();
+    _invoices = Provider.of<InvoiceMap>(context, listen: false).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    var invoices = Provider.of<InvoiceMap>(context, listen: false).toList();
-    _pages = (invoices.length / _size).ceil();
+    final invoices = _pattern != "" 
+      ? _invoices.where((i) => i.code.contains(_pattern))
+      : _invoices;
+
+    final pages = (invoices.length / _size).ceil();
     List<Invoice> slice = [];
 
     if (invoices.isNotEmpty) {
-      final int start = _currentPage * _size;
+      final start = _currentPage * _size;
 
-      slice = invoices.sublist(
+      slice = invoices.toList().sublist(
         start,
         (start + _size).clamp(0, invoices.length),
       );
@@ -75,6 +78,18 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: TextField(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: "Buscar factura"
+              ),
+              onChanged: (value) => setState(() {
+                _pattern = value;
+              }),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: slice.length,
@@ -89,9 +104,9 @@ class _HomePageState extends State<HomePage> {
             )
           ),
           Padding(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: NumberPaginator(
-              numberPages: _pages,
+              numberPages: pages,
               onPageChange: (n) {
                 setState(() {
                   _currentPage = n;

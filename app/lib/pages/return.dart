@@ -125,6 +125,57 @@ class ReturnPage extends StatefulWidget {
 class _ReturnPageState extends State<ReturnPage> {
   final Map<int, _ReturnLineData> _returnData = {};
 
+Future<void> _showMyDialog() async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirmar devolución'),
+        content: const Text('¿Desea confirmar esta devolución? Esta acción no se puede deshacer'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Aprobar'),
+            onPressed: () async {
+              final service = Provider.of<ApiService>(context, listen: false);
+              
+              try {
+                final result = await service.post<Map<String, dynamic>>("return", body: {
+                  "c_bpartner_id": widget.args.bpartnerId
+                }).then((value) => service.post<Map<String, dynamic>>(
+                  "return/${value["record_id"]}/lines", body: _returnData.values.map((l) => l.toMap()).toList()
+                ));
+
+                if(result.isNotEmpty && context.mounted) {
+                  Provider.of<InvoiceMap>(context, listen: false).get(widget.args.invoiceId)?.returnInvoice({ 
+                    for (var line in _returnData.values)
+                      line.lineId: line.quantity
+                  });
+                  Navigator.of(context).pushNamed("/home");
+                }
+              } catch (e) {
+                print(e);
+
+                if(context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Ocurrió un error: $e'),
+                  ));
+                }
+              } finally {
+                if(context.mounted) Navigator.of(context).pop();
+              }
+            },
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Cancelar")
+          )
+        ],
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,27 +194,7 @@ class _ReturnPageState extends State<ReturnPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final service = Provider.of<ApiService>(context, listen: false);
-          
-          try {
-            final result = await service.post<Map<String, dynamic>>("return", body: {
-              "c_bpartner_id": widget.args.bpartnerId
-            }).then((value) => service.post<Map<String, dynamic>>(
-              "return/${value["record_id"]}/lines", body: _returnData.values.map((l) => l.toMap()).toList()
-            ));
-
-            if(result.isNotEmpty && context.mounted) {
-              Provider.of<InvoiceMap>(context, listen: false).get(widget.args.invoiceId)?.returnInvoice({ 
-                for (var line in _returnData.values)
-                  line.lineId: line.quantity
-              });
-              Navigator.of(context).pushNamed("/home");
-            }
-          } catch (e) {
-            print(e);
-          }
-        },
+        onPressed: () => _showMyDialog(),
         child: Icon(Icons.save),
       ),
     );
