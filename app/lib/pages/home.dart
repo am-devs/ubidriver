@@ -1,5 +1,6 @@
 import 'package:driver_return/models.dart';
 import 'package:driver_return/pages/invoice.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
@@ -35,23 +36,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late List<Invoice> _invoices = [];
   static const _size = 10;
   int _currentPage = 0;
   String _pattern = "";
 
   @override
-  void initState() {
-    super.initState();
-
-    _invoices = Provider.of<InvoiceMap>(context, listen: false).toList();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final allInvoices = Provider.of<InvoiceMap>(context).toList();
+
     final invoices = _pattern != "" 
-      ? _invoices.where((i) => i.code.contains(_pattern))
-      : _invoices;
+      ? allInvoices.where((i) => i.code.contains(_pattern))
+      : allInvoices;
 
     final pages = (invoices.length / _size).ceil();
     List<Invoice> slice = [];
@@ -75,6 +70,13 @@ class _HomePageState extends State<HomePage> {
           "Chofer",
           style: TextStyle(color: Colors.white),
         ),
+        leading: IconButton(
+            onPressed: () {
+              Provider.of<ApiService>(context).unauthenticated();
+              Navigator.pushNamed(context, "/login");
+            },
+            icon: Icon(Icons.logout)
+          ), 
       ),
       body: Column(
         children: [

@@ -119,20 +119,48 @@ class InvoicePageState extends State<InvoicePage> {
   }
 
   void _confirmInvoice() async {
-    try {
-      final service = Provider.of<ApiService>(context, listen: false);
-      
-      await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm").then((_) =>
-        service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm-delivery")
-      );
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar factura'),
+          content: const Text('¿Desea confirmar esta factura? Esta acción no se puede deshacer'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Aprobar'),
+              onPressed: () async {
+                try {
+                  final service = Provider.of<ApiService>(context, listen: false);
+                  
+                  await service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm").then((_) =>
+                    service.post<Map<String, dynamic>>("invoices/${widget.invoiceId}/confirm-delivery")
+                  );
 
-      if(mounted) {
-        Provider.of<InvoiceMap>(context, listen: false).remove(widget.invoiceId);
-        Navigator.of(context).pushNamed("/home");
-      }
-    } catch(e) {
-      print(e);
-    }
+                  if(context.mounted) {
+                    Provider.of<InvoiceMap>(context, listen: false).remove(widget.invoiceId);
+
+                    Navigator.of(context).pushNamedAndRemoveUntil("/home", (_) => false);
+                    
+                    scaffoldMessengerKey.currentState?.showSnackBar(
+                      SnackBar(
+                        content: const Text('Se ha registrado confirrmado exitosamente la factura')
+                      ),
+                    );
+                  }
+                } catch(e) {
+                  print(e);
+                }
+              },
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancelar")
+            )
+          ],
+        );
+      },
+    );
   }
 
   void _returnInvoice() async {
