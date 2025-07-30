@@ -17,14 +17,10 @@ final class _InvalidUserException implements Exception {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final myController = TextEditingController();
   bool _isLoading = false;
-
-  @override
-  void dispose() {
-    myController.dispose();
-    super.dispose();
-  }
+  final _formGlobalKey = GlobalKey<FormState>();
+  String _username = "";
+  String _password = "";
 
   @override
   Widget build(BuildContext context) {
@@ -32,33 +28,62 @@ class _LoginFormState extends State<LoginForm> {
       return Center(child: CircularProgressIndicator());
     }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
-          child: TextField(
-            controller: myController,
-            decoration: InputDecoration(border: OutlineInputBorder(), labelText: "C.I"),
+    return Form(
+      key: _formGlobalKey,
+      child: Column(
+        children: [
+          TextFormField(
+            decoration: InputDecoration(border: OutlineInputBorder(), labelText: "Usuario"),
+            onSaved: (value) {
+              _username = value!;
+            },
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "El usuario es obligatorio";
+              }
+
+              return null;
+            },
           ),
-        ),
+          TextFormField(
+            obscureText: true,
+            decoration: InputDecoration(border: OutlineInputBorder(), labelText: "Clave"),
+            onSaved: (value) {
+              _password = value!;
+            },
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "La contraseña es obligatoria";
+              }
+
+              return null;
+            },
+          ),
         ElevatedButton(
           onPressed: () async {
-              setState(() {
-                _isLoading = true;
-              });
+              if (!_formGlobalKey.currentState!.validate()) {
+                return;
+              }
 
-              final service = context.read<ApiService>();
+              _formGlobalKey.currentState!.save();
 
               try {
-                final result = await service.authenticate(myController.text);
+                setState(() {
+                  _isLoading = true;
+                });
+
+                final service = context.read<ApiService>();
+                final result = await service.authenticate(_username, _password);
 
                 if(!result) throw _InvalidUserException();
 
                 final invoices = await service.get<List<dynamic>>("invoices");
 
                 if(context.mounted) {
-                  Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
+                  if (invoices.isNotEmpty) {
+                    Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
+                  }
+
                   Navigator.pushNamed(context, '/home');
                 }
               } catch(e) {
@@ -77,7 +102,9 @@ class _LoginFormState extends State<LoginForm> {
           },
           child: const Text("Iniciar sesión"),
         ),
-      ]
+
+        ],
+      )
     );
   }
 }

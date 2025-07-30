@@ -1,0 +1,15 @@
+services:
+  driver_id:
+    build: .
+    ports:
+      - "8084:80"
+    env_file: .env
+    networks:
+      - public
+    extra_hosts:
+      - "vmtestbd:192.168.59.19"
+      - "adempiere-fc-engine:192.168.59.141"
+networks:
+  public:
+    driver: bridge
+    external: true

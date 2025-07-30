@@ -1,33 +1,10 @@
 import datetime
 from pydantic import BaseModel
 from services import Database, sent_record_and_get_id
-from authentication import create_access_token
 from passlib.context import CryptContext
 import templates
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-class Login(BaseModel):
-    cedula: str
-
-    def login(self):
-        with Database() as db:
-            db.execute("""
-SELECT 
-    fta_driver_id,
-    name
-FROM fta_driver
-WHERE value = %s""", self.cedula)
-
-            result = db.fetchone()
-
-            if result == None:
-                raise Exception("Usuario invalido")
-            else:
-                return create_access_token({
-                    "sub": str(result[0]),
-                    "name": result[1],
-                })
 
 class Product(BaseModel):
     id: int
@@ -136,7 +113,7 @@ JOIN C_DocType as ctype on ci.C_DocType_ID = ctype.C_DocType_ID
 JOIN C_DocBaseType as baset on ctype.C_DocBaseType_ID = baset.C_DocBaseType_ID
 WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
-    AND (ci.is_confirm !='Y' OR ci.is_confirm is NULL)
+    --AND (ci.is_confirm !='Y' OR ci.is_confirm is NULL)
     AND et.FTA_Driver_ID = %s""", driver_id)
             
             invoices = {}
@@ -185,3 +162,17 @@ def create_return_lines(order_id: int, records: list[ReturnLine]):
             results[pid] = result
 
     return results
+
+def check_for_driver(cedula: str):
+    with Database() as db:
+        db.execute("""
+SELECT fta_driver_id
+FROM fta_driver
+WHERE value = %s""", cedula)
+
+        result = db.fetchone()
+
+        if result == None:
+            return 0
+        else:
+            return result[0]

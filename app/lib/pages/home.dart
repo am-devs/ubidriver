@@ -72,52 +72,53 @@ class _HomePageState extends State<HomePage> {
         ),
         leading: IconButton(
             onPressed: () {
-              Provider.of<ApiService>(context).unauthenticated();
+              Provider.of<ApiService>(context, listen: false).unauthenticated();
               Navigator.pushNamed(context, "/login");
             },
             icon: Icon(Icons.logout)
           ), 
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Buscar factura"
+      body: (invoices.isNotEmpty)
+        ? Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Buscar factura"
+                ),
+                onChanged: (value) => setState(() {
+                  _pattern = value;
+                }),
               ),
-              onChanged: (value) => setState(() {
-                _pattern = value;
-              }),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: slice.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    _InvoiceTile(slice[index]),
-                    const Divider(height: 0),
-                  ]
-                );
-              },
+            Expanded(
+              child: ListView.builder(
+                itemCount: slice.length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: [
+                      _InvoiceTile(slice[index]),
+                      const Divider(height: 0),
+                    ]
+                  );
+                },
+              )
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: NumberPaginator(
+                numberPages: pages,
+                onPageChange: (n) {
+                  setState(() {
+                    _currentPage = n;
+                  });
+                },
+              ),
             )
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: NumberPaginator(
-              numberPages: pages,
-              onPageChange: (n) {
-                setState(() {
-                  _currentPage = n;
-                });
-              },
-            ),
-          )
-        ]
-      )
+          ])
+        : Center(child: Text("No hay nada que mostrar"),)
     );
   }
 }

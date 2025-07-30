@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI, Response, status
 from fastapi.security import OAuth2PasswordBearer
-from authentication import decode_token
+from authentication import login, get_user
 import models
 
 app = FastAPI(root_path="/v1")
@@ -17,9 +17,10 @@ def get_ping():
 @app.get("/invoices")
 def invoices(response: Response, token: str = Depends(oauth2_scheme)):
     try:
-        token = decode_token(token)
+        user = get_user(token)
+        driver_id = models.check_for_driver(user["username"][1:])
 
-        return models.Invoice.get_by_driver_id(int(token["sub"]))
+        return models.Invoice.get_by_driver_id(driver_id)
     except Exception as e:
         response.status_code = status.HTTP_403_FORBIDDEN
 
@@ -34,7 +35,7 @@ def invoices_id():
 @app.post("/invoices/{id}/confirm")
 def invoices_id_confirm(id: int, response: Response, token: str = Depends(oauth2_scheme)):
     try:
-        token = decode_token(token)
+        get_user(token)
 
         result = models.Invoice.confirm_invoice(id)
 
@@ -56,7 +57,7 @@ def invoices_id_confirm(id: int, response: Response, token: str = Depends(oauth2
 @app.post("/invoices/{id}/confirm-delivery")
 def invoices_id_confirm_delivery(id: int, response: Response, token: str = Depends(oauth2_scheme)):
     try:
-        token = decode_token(token)
+        get_user(token)
 
         result = models.Invoice.confirm_deliveries(id)
 
@@ -76,9 +77,9 @@ def invoices_id_confirm_delivery(id: int, response: Response, token: str = Depen
 @app.post("/return")
 def invoices_return(data: models.Return, response: Response, token: str = Depends(oauth2_scheme)):
     try:
-        token = decode_token(token)
+        user = get_user(token)
 
-        result = data.create(int(token["sub"]), token["name"])
+        result = data.create(user["user_id"], user["name"])
 
         if result:
             response.status_code = status.HTTP_201_CREATED
@@ -98,7 +99,7 @@ def invoices_return(data: models.Return, response: Response, token: str = Depend
 @app.post("/return/{id}/lines")
 def invoices_return_lines(id: int, data: list[models.ReturnLine], response: Response, token: str = Depends(oauth2_scheme)):
     try:
-        token = decode_token(token)
+        get_user(token)
 
         result = models.create_return_lines(id, data)
 
@@ -136,10 +137,15 @@ def notifications():
     ...
 
 @app.post("/login")
-def post_login(login: models.Login, response: Response):
+def post_login(data: dict, response: Response):
     try:
         # El token de acceso y su fecha de expiracion
-        return login.login()
+        driver = login(data)
+
+        if driver and models.check_for_driver(data["username"][1:]):
+            return driver
+        else:
+            raise Exception("No hay ningún chofer con esas credenciales")
     except Exception as e:
         response.status_code = status.HTTP_403_FORBIDDEN
 

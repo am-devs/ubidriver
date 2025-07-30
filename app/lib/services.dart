@@ -2,14 +2,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static final _baseUrl = Uri.parse("http://192.168.1.244:8084/v1");
+  static final _baseUrl = Uri.parse("http://192.168.1.129:8084/v1");
   String _token = "";
 
-  Future<bool> authenticate(String cedula) async {
+  Future<bool> authenticate(String username, String password) async {
+    final body = jsonEncode({'username': username, 'password': password});
+
+    print(body);
+
     var response = await http.post(
       Uri.parse("$_baseUrl/login"),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({'cedula': cedula}),
+      body: body,
     ).timeout(const Duration(seconds: 10));
 
     Map<String, dynamic> data = jsonDecode(response.body);
@@ -19,7 +23,8 @@ class ApiService {
 
       return false;
     } else {
-      _token = data["token"] as String;
+      _token = data["client_secret"] as String;
+
       return true;
     }
   }

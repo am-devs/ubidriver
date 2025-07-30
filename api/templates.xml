@@ -26,7 +26,7 @@
                         <adin:field column="is_confirm">
                             <adin:val>Y</adin:val>
                         </adin:field>
-                            <adin:field column="ship_app">
+                        <adin:field column="ship_app">
                             <adin:val></adin:val>
                         </adin:field>
                     </adin:DataRow>
