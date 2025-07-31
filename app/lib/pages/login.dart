@@ -77,14 +77,14 @@ class _LoginFormState extends State<LoginForm> {
 
                 if(!result) throw _InvalidUserException();
 
-                final invoices = await service.get<List<dynamic>>("invoices");
+                // final invoices = await service.get<List<dynamic>>("invoices");
 
                 if(context.mounted) {
-                  if (invoices.isNotEmpty) {
-                    Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
-                  }
+                  // if (invoices.isNotEmpty) {
+                  //   Provider.of<InvoiceMap>(context, listen: false).initialize(invoices.map((json) => Invoice.fromJson(json)));
+                  // }
 
-                  Navigator.pushNamed(context, '/home');
+                  Navigator.pushNamed(context, '/deliver');
                 }
               } catch(e) {
                 print(e);

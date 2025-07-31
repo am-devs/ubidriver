@@ -1,5 +1,4 @@
 import 'package:driver_return/models.dart';
-import 'package:driver_return/pages/invoice.dart';
 import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +13,6 @@ class _InvoiceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        onTap: () {
-          Navigator.pushNamed(context, '/invoice', arguments: InvoiceArguments(invoice.id));
-        },  
         title: Text(invoice.code),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +114,13 @@ class _HomePageState extends State<HomePage> {
               ),
             )
           ])
-        : Center(child: Text("No hay nada que mostrar"),)
+        : Center(child: Text("No hay nada que mostrar"),),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, "/customer");
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

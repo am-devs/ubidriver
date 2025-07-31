@@ -6,27 +6,29 @@ class ApiService {
   String _token = "";
 
   Future<bool> authenticate(String username, String password) async {
-    final body = jsonEncode({'username': username, 'password': password});
+    // final body = jsonEncode({'username': username, 'password': password});
 
-    print(body);
+    // print(body);
 
-    var response = await http.post(
-      Uri.parse("$_baseUrl/login"),
-      headers: {"Content-Type": "application/json"},
-      body: body,
-    ).timeout(const Duration(seconds: 10));
+    // var response = await http.post(
+    //   Uri.parse("$_baseUrl/login"),
+    //   headers: {"Content-Type": "application/json"},
+    //   body: body,
+    // ).timeout(const Duration(seconds: 10));
 
-    Map<String, dynamic> data = jsonDecode(response.body);
+    // Map<String, dynamic> data = jsonDecode(response.body);
 
-    if(data.containsKey('error')) {
-      print("Error $data");
+    // if(data.containsKey('error')) {
+    //   print("Error $data");
 
-      return false;
-    } else {
-      _token = data["client_secret"] as String;
+    //   return false;
+    // } else {
+    //   _token = data["client_secret"] as String;
 
-      return true;
-    }
+    //   return true;
+    // }
+
+    return true;
   }
 
   void unauthenticated() {
