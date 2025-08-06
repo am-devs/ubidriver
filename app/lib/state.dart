@@ -3,38 +3,20 @@ import 'package:flutter/material.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-class InvoiceMap extends ChangeNotifier {
-  Map<int, Invoice> _invoices = {};
+class AppState extends ChangeNotifier {
+  Invoice? _invoice;
+  
+  void setInvoice(Invoice inv) {
+    _invoice = inv;
 
-  int get size => _invoices.length;
-
-  void initialize(Iterable<Invoice> list) {
-    if(_invoices.isNotEmpty) {
-      _invoices.clear();
-    }
-
-    for(var inv in list) {
-      _invoices[inv.id] = inv;
-    }
+    notifyListeners();
   }
 
-  void add(Invoice inv) {
-    _invoices[inv.id] = inv;
+  void clearInvoice() {
+    _invoice = null;
+
+    notifyListeners();
   }
 
-  void remove(int id) {
-    _invoices.remove(id);
-  }
-
-  void clear() {
-    _invoices.clear();
-  }
-
-  Invoice? get(int id) {
-    return _invoices[id];
-  }
-
-  List<Invoice> toList() {
-    return _invoices.values.toList();
-  }
+  Invoice? get invoice => _invoice;
 }

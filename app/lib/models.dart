@@ -28,6 +28,14 @@ class InvoiceLine {
   InvoiceLine({required this.id, required this.product, required this.quantity, required this.uom});
 }
 
+class ReturnLine {
+  final double quantity;
+  final String lote;
+  final String reason;
+
+  const ReturnLine({required this.quantity, required this.lote, required this.reason});
+}
+
 class Invoice {
   final String code;
   final DateTime date;
@@ -35,7 +43,9 @@ class Invoice {
   final String organization;
   final Customer customer;
   bool confirm = false;
-  Map<int, InvoiceLine> lines = {};
+  List<InvoiceLine> lines = [];
+
+  double get totalQuantity => lines.map((p) => p.quantity).reduce((value, element) => value + element);
 
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
 
