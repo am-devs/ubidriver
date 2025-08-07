@@ -19,21 +19,25 @@ class Product {
   const Product({required this.id, required this.name});
 }
 
-class InvoiceLine {
-  final int id;
+class ProductLine {
   final Product product;
-  final String uom;
-  double quantity;
+  final double quantity;
+  int get id => product.id;
 
-  InvoiceLine({required this.id, required this.product, required this.quantity, required this.uom});
+  const ProductLine({required this.product, required this.quantity});
 }
 
-class ReturnLine {
-  final double quantity;
+class InvoiceLine extends ProductLine {
+  final String uom;
+
+  const InvoiceLine({required this.uom, required super.product, required super.quantity});
+}
+
+class ReturnLine extends ProductLine {
   final String lote;
   final String reason;
 
-  const ReturnLine({required this.quantity, required this.lote, required this.reason});
+  ReturnLine({required this.lote, required this.reason, required super.product, required super.quantity});
 }
 
 class Invoice {
@@ -44,14 +48,9 @@ class Invoice {
   final Customer customer;
   bool confirm = false;
   List<InvoiceLine> lines = [];
+  Map<int, ReturnLine> returns = {};
 
   double get totalQuantity => lines.map((p) => p.quantity).reduce((value, element) => value + element);
 
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
-
-  void returnInvoice(Map<int, double> data) {
-    for(var MapEntry(key: id, value: quantity) in data.entries) {
-      lines[id]!.quantity -= quantity;
-    }
-  }
 }

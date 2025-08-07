@@ -1,3 +1,4 @@
+import 'package:driver_return/pages/ending.dart';
 import 'package:driver_return/pages/invoice.dart';
 import 'package:driver_return/pages/resume.dart';
 import 'package:driver_return/pages/return.dart';
@@ -37,7 +38,8 @@ class MyApp extends StatelessWidget {
             '/search': (context) => SearchPage(),
             '/invoice': (context) => InvoicePage(),
             '/resume': (context) => ResumePage(),
-            '/return': (context) => ReturnPage()
+            '/return': (context) => ReturnPage(),
+            '/ending': (context) => EndingPage()
           };
 
           WidgetBuilder builder = routes[settings.name]!;

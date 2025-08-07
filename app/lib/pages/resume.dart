@@ -1,4 +1,5 @@
 import 'package:driver_return/models.dart';
+import 'package:driver_return/components.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +22,7 @@ class ResumePage extends StatelessWidget {
     const boldStyle = TextStyle(fontWeight: FontWeight.bold);
     final defaultStyle = DefaultTextStyle.of(context).style;
 
-    return Column(
+    return AppScaffold(
       children: [
         Center(child: const Icon(Icons.check_circle_rounded, size: 20,),),
         const Text(
@@ -56,7 +57,8 @@ class ResumePage extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: () {
-            Navigator.of(context).pushNamed("/search");
+            Provider.of<AppState>(context, listen: false).advanceState();
+            Navigator.of(context).pushNamed("/ending");
           },
           child: const Text("CONFIRMAR DESPACHO")
         )
