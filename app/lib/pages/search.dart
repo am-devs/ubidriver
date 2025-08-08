@@ -6,19 +6,21 @@ import 'package:provider/provider.dart';
 
 class _SearchInvoiceState extends State<_SearchInvoice> {
   final List<Invoice> _invoices = [];
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    Invoice inv;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SearchBar(
-            leading: const Icon(Icons.search),
-            hintText: "Buscar factura",
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SearchBar(
+            controller: _searchController,
+            backgroundColor: WidgetStatePropertyAll(Colors.grey.shade50),
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            trailing: [const Icon(Icons.search, size: 32,)],
+            hintText: "BUSCAR FACTURA",
             onSubmitted: (value) {
               final invoice = Invoice(
                 code: "123",
@@ -49,36 +51,73 @@ class _SearchInvoiceState extends State<_SearchInvoice> {
               setState(() {
                 _invoices.add(invoice);
               });
-            },
-          )
-        ),
-        if (_invoices.isNotEmpty)
-          Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _invoices.length,
-                itemBuilder: (context, index) {
-                  inv = _invoices[index];
 
-                  return Card(
-                    child: ListTile(
-                      leading: FlutterLogo(size: 72.0),
-                      title: Text(inv.code),
-                      subtitle: Text('CLIENTE: ${inv.customer.name}'),
-                      trailing: Icon(Icons.keyboard_arrow_right_sharp),
-                      onTap: () {
-                        var state = Provider.of<AppState>(context, listen: false);
-                        
-                        state.setInvoice(inv);
-                        state.advanceState();
-                        Navigator.of(context).pushNamed("/invoice");
-                      },
-                    ),
-                  );
-                },
+              _searchController.clear();
+            },
+          ),
+          if (_invoices.isNotEmpty)
+            _buildInvoiceList()
+        ],
+      )
+    );
+  }
+
+  Widget _buildInvoiceList() {
+    Invoice inv;
+
+    return SizedBox(
+      height: MediaQuery.sizeOf(context).height * 0.7,
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: _invoices.length,
+        itemBuilder: (context, index) {
+          inv = _invoices[index];
+
+          return Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                width: 2.0,
+                color: Colors.red
               )
             ),
-      ],
+            color: Colors.white,
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              leading: FlutterLogo(size: 72.0),
+              title: Text(
+                inv.code,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: RichText(
+                text: TextSpan(
+                  text: "CLIENTE: ",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                  children: [
+                    TextSpan(text: inv.customer.name.toUpperCase(), style: TextStyle(color: Colors.red))
+                  ]
+                )
+              ),
+              trailing: Icon(
+                Icons.keyboard_arrow_right,
+                size: 48,
+                color: Colors.red.shade700,
+              ),
+              onTap: () {
+                final state = Provider.of<AppState>(context, listen: false);
+                
+                state.setInvoice(inv);
+                state.advanceState();
+                Navigator.of(context).pushNamed("/invoice");
+              },
+            ),
+          );
+        }, 
+        separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 16,),
+      )
     );
   }
 }

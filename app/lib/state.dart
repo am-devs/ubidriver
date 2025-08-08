@@ -46,6 +46,7 @@ class AppState extends ChangeNotifier {
   }
 
   void setReturnLines(List<InvoiceLine> lines) {
+    _returnLines.clear();
     _returnLines.addAll(lines);
 
     notifyListeners();

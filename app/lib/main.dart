@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent.shade400)
         ),
         home: LoginPage(),
         onGenerateRoute: (settings) {

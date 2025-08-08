@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 // Debug only
 const List<String> selections = ["M-1", "M-2", "M-3"];
 
+const int limitQuantity = 30;
+
 class _ProductStep extends StatefulWidget {
   final double maxQuantity;
   final Function(String, double, String) onSave;
@@ -15,10 +17,10 @@ class _ProductStep extends StatefulWidget {
   const _ProductStep(this.maxQuantity, this.onSave, {this.stepKey}) : super(key: stepKey);
 
   @override
-  __ProductStepState createState() => __ProductStepState();
+  _ProductStepState createState() => _ProductStepState();
 }
 
-class __ProductStepState extends State<_ProductStep> {
+class _ProductStepState extends State<_ProductStep> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedReason;
   double? _quantity;
@@ -53,13 +55,17 @@ class __ProductStepState extends State<_ProductStep> {
               if (value == null || value.isEmpty) {
                 return 'Ingrese una cantidad';
               }
+
               final qty = double.tryParse(value);
+
               if (qty == null) {
                 return 'Ingrese un número válido';
               }
+
               if (qty > widget.maxQuantity) {
-                return "La cantidad no puede superar a la original";
+                return "La cantidad no puede ser mayor que ${widget.maxQuantity}";
               }
+
               return null;
             },
             onSaved: (value) => _quantity = double.tryParse(value ?? '0'),
@@ -96,7 +102,7 @@ class _ReturnPageState extends State<ReturnPage> {
   int _index = 0;
   final List<InvoiceLine> _lines = [];
   final Map<int, ReturnLine> _returnData = {};
-  final List<GlobalKey<__ProductStepState>> _stepKeys = [];
+  final List<GlobalKey<_ProductStepState>> _stepKeys = [];
 
   @override
   void initState() {
@@ -129,7 +135,14 @@ class _ReturnPageState extends State<ReturnPage> {
                   _index += 1;
                 });
               } else {
-                Provider.of<AppState>(context, listen: false).returnInvoice(_returnData);
+                final state = Provider.of<AppState>(context, listen: false);
+                
+                state.returnInvoice(_returnData);
+
+                if (_returnData.values.map((value) => value.quantity).reduce((value, element) => value + element) > limitQuantity) {
+                  state.advanceState();
+                }
+
                 Navigator.of(context).pop();
               }
             }

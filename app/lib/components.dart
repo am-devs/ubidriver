@@ -11,8 +11,6 @@ enum _OperationStatus {
 }
 
 class _AppHeader extends StatelessWidget {
-  const _AppHeader({super.key});
-
   @override
   Widget build(BuildContext context) {
     final state = Provider.of<AppState>(context);
@@ -114,6 +112,27 @@ class _AppHeader extends StatelessWidget {
   }
 }
 
+final ButtonStyle appButtonStyle = ElevatedButton.styleFrom(
+  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+  backgroundColor: Colors.red,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12)
+  )
+);
+
+class AppBackButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        Provider.of<AppState>(context, listen: false).revertState();
+        Navigator.of(context).pop();
+      },
+      icon: const Icon(Icons.keyboard_arrow_left, size: 48,)
+    );
+  }
+}
+
 class AppScaffold extends StatelessWidget {
   final List<Widget> children;
 
@@ -124,6 +143,8 @@ class AppScaffold extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: Colors.white,
         body: Column(
           children: [
             _AppHeader(),

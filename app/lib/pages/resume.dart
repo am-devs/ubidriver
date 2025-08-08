@@ -19,48 +19,74 @@ class ResumePage extends StatelessWidget {
 
     Customer custom = invoice.customer;
 
-    const boldStyle = TextStyle(fontWeight: FontWeight.bold);
-    final defaultStyle = DefaultTextStyle.of(context).style;
+    const boldStyle = TextStyle(fontWeight: FontWeight.bold, color: Colors.black);
+    final defaultStyle = TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w400);
+    const redStyle = TextStyle(fontWeight: FontWeight.bold, color: Colors.red);
 
     return AppScaffold(
       children: [
-        Center(child: const Icon(Icons.check_circle_rounded, size: 20,),),
-        const Text(
-          "VERIFIQUE SI LOS DATOS SON LOS CORRECTOS",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 24),
+        Align(
+          alignment: Alignment.topLeft,
+          child: AppBackButton(),
         ),
-        RichText(
-          text: TextSpan(
-            text: 'Número de factura',
-            children: <TextSpan>[
-              TextSpan(text: invoice.code, style: defaultStyle),
-            ],
+        Center(
+          child: const Icon(
+            Icons.check_circle_rounded,
+            size: 128,
+            color: Colors.green,
           ),
         ),
-        RichText(
-          text: TextSpan(
-            text: 'CLIENTE',
-            style: boldStyle,
-            children: <TextSpan>[
-              TextSpan(text: custom.name, style: defaultStyle),
-              TextSpan(text: "\nRIF", style: boldStyle),
-              TextSpan(text: custom.vat, style: defaultStyle),
-              TextSpan(text: "\nDIRECCION", style: boldStyle),
-              TextSpan(text: custom.address, style: defaultStyle),
-              TextSpan(text: "\nTOTAL DE PRODUCTOS", style: boldStyle),
-              TextSpan(text: invoice.lines.map((p)=> p.product.name).join(", "), style: defaultStyle),
-              TextSpan(text: "\nTOTAL DE BULTOS", style: boldStyle),
-              TextSpan(text: invoice.totalQuantity.toString(), style: defaultStyle),
-            ],
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: const Text(
+            "VERIFIQUE SI LOS DATOS SON LOS CORRECTOS",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: RichText(
+            text: TextSpan(
+              text: 'Número de factura ',
+              style: TextStyle(color: Colors.grey.shade400, fontSize:24),
+              children: <TextSpan>[
+                TextSpan(text: invoice.code, style: TextStyle(color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height * 0.35,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 48),
+            child: RichText(
+              text: TextSpan(
+                text: 'CLIENTE: ',
+                style: boldStyle,
+                children: <TextSpan>[
+                  TextSpan(text: custom.name.toUpperCase(), style: defaultStyle),
+                  TextSpan(text: "\nRIF: ", style: boldStyle),
+                  TextSpan(text: custom.vat.toUpperCase(), style: defaultStyle),
+                  TextSpan(text: "\nDIRECCION: ", style: boldStyle),
+                  TextSpan(text: custom.address.toUpperCase(), style: defaultStyle),
+                  TextSpan(text: "\n\nTOTAL DE PRODUCTOS:\n", style: boldStyle),
+                  TextSpan(text: invoice.lines.map((p)=> p.product.name).join(", ").toUpperCase(), style: redStyle),
+                  TextSpan(text: "\n\nTOTAL DE BULTOS:\n", style: boldStyle),
+                  TextSpan(text: invoice.totalQuantity.toString(), style: redStyle),
+                ],
+              ),
+            )
           ),
         ),
         ElevatedButton(
+          style: appButtonStyle,
           onPressed: () {
             Provider.of<AppState>(context, listen: false).advanceState();
             Navigator.of(context).pushNamed("/ending");
           },
-          child: const Text("CONFIRMAR DESPACHO")
+          child: const Text("CONFIRMAR DESPACHO", style: TextStyle(color: Colors.white),)
         )
       ],
     );

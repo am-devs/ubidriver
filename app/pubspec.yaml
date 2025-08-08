@@ -14,6 +14,7 @@ dependencies:
   local_auth: ^2.3.0
   provider: ^6.1.4
   http: ^1.3.0
+  gif: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +24,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/ending.gif
+    - assets/login.png
+    - assets/logo.png
