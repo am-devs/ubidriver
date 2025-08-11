@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 class ApprovalPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var state = Provider.of<AppState>(context);
+
     return AppScaffold(
       children: [
         Padding(
@@ -18,7 +20,8 @@ class ApprovalPage extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: AppInvoiceCard(
-            invoice: Provider.of<AppState>(context).invoice!,
+            invoice: state.invoice!,
+            isApproved: state.isApproved,
             onTap: () {
               Navigator.of(context).pushNamed("/invoice");
             },

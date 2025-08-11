@@ -11,9 +11,17 @@ enum DeliveryState {
   confirmed,
 }
 
+class _InvoiceApproval {
+  bool approved = false;
+}
+
 class AppState extends ChangeNotifier {
   final List<InvoiceLine> _returnLines = [];
   Invoice? _invoice;
+  _InvoiceApproval? _approval;
+
+  bool get isApproved => _approval == null || _approval?.approved == true;
+
   DeliveryState _status = DeliveryState.searchingInvoice;
 
   Invoice? get invoice => _invoice;
@@ -89,13 +97,13 @@ class AppState extends ChangeNotifier {
   }
 
   void setInvoiceApproval() {
-    _invoice?.prepareApproval();
+    _approval = _InvoiceApproval();
 
     notifyListeners();
   }
 
   void approveInvoice() {
-    _invoice?.approve();
+    _approval!.approved = true;
 
     notifyListeners();
   }

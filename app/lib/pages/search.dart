@@ -35,6 +35,7 @@ class _SearchPageState extends State<SearchPage> {
             itemCount: _invoices.length,
             itemBuilder: (context, index) => AppInvoiceCard(
               invoice: _invoices[index],
+              isApproved: true,
               onTap: () {
                 final state = Provider.of<AppState>(context, listen: false);
 

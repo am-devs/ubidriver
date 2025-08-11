@@ -183,9 +183,10 @@ class AppScaffold extends StatelessWidget {
 
 class AppInvoiceCard extends StatelessWidget {
   final Invoice invoice;
+  final bool isApproved;
   final GestureTapCallback? onTap;
 
-  AppInvoiceCard({required this.invoice, this.onTap});
+  AppInvoiceCard({required this.invoice, required this.isApproved, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -197,9 +198,9 @@ class AppInvoiceCard extends StatelessWidget {
           color: Colors.red
         )
       ),
-      color: invoice.isApproved ? Colors.white : Colors.red.shade50,
+      color: isApproved ? Colors.white : Colors.red.shade50,
       child: ListTile(
-        enabled: invoice.isApproved,
+        enabled: isApproved,
         contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         leading: FlutterLogo(size: 72.0),
         title: Text(
