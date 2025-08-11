@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'models.g.dart';
+
+@JsonSerializable()
 class Customer {
   final String name;
   final int id;
@@ -10,35 +15,62 @@ class Customer {
     required this.address,
     required this.vat
   });
+
+  factory Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CustomerToJson(this);
 }
 
+@JsonSerializable()
 class Product {
   final int id;
   final String name;
 
   const Product({required this.id, required this.name});
+
+  factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ProductToJson(this);
 }
 
+@JsonSerializable()
 class ProductLine {
   final Product product;
   final double quantity;
   int get id => product.id;
 
   const ProductLine({required this.product, required this.quantity});
+
+  factory ProductLine.fromJson(Map<String, dynamic> json) => _$ProductLineFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ProductLineToJson(this);
 }
 
+@JsonSerializable()
 class InvoiceLine extends ProductLine {
   final String uom;
 
   const InvoiceLine({required this.uom, required super.product, required super.quantity});
+
+  factory InvoiceLine.fromJson(Map<String, dynamic> json) => _$InvoiceLineFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$InvoiceLineToJson(this);
 }
 
+@JsonSerializable()
 class ReturnLine extends ProductLine {
   final String reason;
 
   ReturnLine({required this.reason, required super.product, required super.quantity});
+  
+  factory ReturnLine.fromJson(Map<String, dynamic> json) => _$ReturnLineFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$ReturnLineToJson(this);
 }
 
+@JsonSerializable()
 class Invoice {
   static const int _limitQuantity = 30;
 
@@ -67,4 +99,8 @@ class Invoice {
     : false;
 
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
+
+  factory Invoice.fromJson(Map<String, dynamic> json) => _$InvoiceFromJson(json);
+
+  Map<String, dynamic> toJson() => _$InvoiceToJson(this);
 }

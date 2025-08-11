@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:driver_return/models.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:path_provider/path_provider.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -11,21 +16,66 @@ enum DeliveryState {
   confirmed,
 }
 
+@JsonSerializable()
 class _InvoiceApproval {
-  bool approved = false;
+  bool approved;
+
+  _InvoiceApproval(this.approved);
+
+  factory _InvoiceApproval.fromJson(Map<String, dynamic> json) => _InvoiceApproval(json["approved"]);
+
+  Map<String, dynamic> toJson() => {
+    "approved": approved
+  };
 }
 
+class SnapShot {
+  static Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  static Future<File> get _localFile async {
+    final path = await _localPath;
+
+    return File('$path/data.json');
+  }
+
+  static Future<File> saveSnapshot(String data) async {
+    final file = await _localFile;
+
+    return file.writeAsString(data);
+  }
+
+  static Future<Map<String, dynamic>> loadState() async {
+    try {
+      final file = await _localFile;
+
+      // Read the file
+      final contents = await file.readAsString();
+
+      return jsonDecode(contents);
+    } catch (e) {
+      print("Error loading state: $e");
+
+      return {};
+    }
+  }
+}
+
+@JsonSerializable()
 class AppState extends ChangeNotifier {
   final List<InvoiceLine> _returnLines = [];
   Invoice? _invoice;
   _InvoiceApproval? _approval;
-
-  bool get isApproved => _approval == null || _approval?.approved == true;
-
   DeliveryState _status = DeliveryState.searchingInvoice;
 
+  bool get isApproved => _approval == null || _approval?.approved == true;
   Invoice? get invoice => _invoice;
   DeliveryState get currentState => _status;
+
+  AppState();
 
   void revertState() {
     _status = switch (_status) {
@@ -48,6 +98,8 @@ class AppState extends ChangeNotifier {
       DeliveryState.confirmed => DeliveryState.searchingInvoice,
     };
 
+    SnapShot.saveSnapshot(jsonEncode(toJson()));
+
     print("State $_status");
 
     notifyListeners();
@@ -57,6 +109,8 @@ class AppState extends ChangeNotifier {
     _status = DeliveryState.searchingInvoice;
     _invoice = null;
     _returnLines.clear();
+
+    SnapShot.saveSnapshot(jsonEncode(toJson()));
 
     notifyListeners();
   }
@@ -97,7 +151,7 @@ class AppState extends ChangeNotifier {
   }
 
   void setInvoiceApproval() {
-    _approval = _InvoiceApproval();
+    _approval = _InvoiceApproval(false);
 
     notifyListeners();
   }
@@ -107,4 +161,20 @@ class AppState extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  factory AppState.fromJson(Map<String, dynamic> json) {
+    final instance = AppState();
+
+    instance._invoice = Invoice.fromJson(json["invoice"]);
+    instance._status = json["status"] as DeliveryState;
+    instance._approval = _InvoiceApproval.fromJson(json["approval"]);
+
+    return instance;
+  }
+
+  Map<String, dynamic> toJson() => {
+    "invoice": _invoice?.toJson(),
+    "status": _status.index,
+    "approval": _approval?.toJson()
+  };
 }
