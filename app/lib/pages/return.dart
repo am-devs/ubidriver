@@ -31,9 +31,13 @@ class _ProductStepState extends State<_ProductStep> {
     return Form(
       key: _formKey,
       child: Column(
+        spacing: 16,
         children: [
           DropdownButtonFormField<String>(
-            hint: const Text("Motivo de devolución"),
+            decoration: InputDecoration(
+              labelText: "Motivo de devolución",
+              border: OutlineInputBorder()
+            ),
             value: _selectedReason,
             items: selections.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(value: value, child: Text(value));
@@ -69,14 +73,6 @@ class _ProductStepState extends State<_ProductStep> {
               return null;
             },
             onSaved: (value) => _quantity = double.tryParse(value ?? '0'),
-          ),
-          TextFormField(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "Número de lote",
-            ),
-            validator: (value) => value?.isEmpty ?? true ? 'Ingrese el lote' : null,
-            onSaved: (value) => _batchNumber = value ?? '',
           ),
         ],
       ),
@@ -117,7 +113,28 @@ class _ReturnPageState extends State<ReturnPage> {
     return AppScaffold(
       children: [ 
         Stepper(
+          connectorColor: WidgetStateProperty.all(Colors.red),
+          connectorThickness: 2,
           currentStep: _index,
+          controlsBuilder: (context, details) {
+            return Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Row(
+                spacing: 8,
+                children: [
+                  AppButton(
+                    onPressed: details.onStepContinue,
+                    label: "CONTINUAR",
+                  ),
+                  AppButton(
+                    onPressed: details.onStepCancel,
+                    backgroundColor: Colors.blue,
+                    label: "CANCELAR"
+                  )
+                ],
+              )
+            );
+          },
           onStepCancel: () {
             if (_index > 0) {
               setState(() {
@@ -158,18 +175,24 @@ class _ReturnPageState extends State<ReturnPage> {
             
             return Step(
               title: Text(line.product.name),
-              content: _ProductStep(
+              stepStyle: StepStyle(
+                color: Colors.red.shade800,
+                indexStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)
+              ),
+              content: Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: _ProductStep(
                 line.quantity,
                 (reason, quantity, batchNumber) {
                   _returnData[_lines[index].product.id] = ReturnLine(
                     product: _lines[index].product,
                     reason: reason,
                     quantity: quantity,
-                    lote: batchNumber
                   );
                 },
                 stepKey: _stepKeys[index],
               ),
+              )
             );
           }).toList(),
         ),

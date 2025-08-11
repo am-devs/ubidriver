@@ -20,13 +20,16 @@ class _GifSpeedControlScreenState extends State<_GifSpeedControlScreen> with Tic
   
   @override
   Widget build(BuildContext context) {
-    return Gif(
-      image: AssetImage('assets/ending.gif'),
-      controller: _gifController,
-      height: 400,
-      width: 400,
-      autostart: Autostart.once,
-      placeholder: (context) => const Text('Loading...'),
+    return ClipOval(
+      child: Gif(
+        image: AssetImage('assets/ending.gif'),
+        controller: _gifController,
+        height: 300,
+        width: 300,
+        autostart: Autostart.loop,
+        fps: 7,
+        placeholder: (context) => const Text('Loading...'),
+      ),
     );
   }
 }
@@ -37,21 +40,26 @@ class EndingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       children: [
-        _GifSpeedControlScreen(),
         Expanded(
-          child: RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              text: "DESPACHO COMPLETADO",
-              style: TextStyle(color: Colors.blueGrey, fontSize: 22, fontWeight: FontWeight.w500),
-              children: [
-                TextSpan(
-                  text: "\n¡GRACIAS!",
-                  style: TextStyle(color: Colors.red, fontSize: 22, fontWeight: FontWeight.w500)
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _GifSpeedControlScreen(),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  text: "DESPACHO COMPLETADO",
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 22, fontWeight: FontWeight.w500),
+                  children: [
+                    TextSpan(
+                      text: "\n¡GRACIAS!",
+                      style: TextStyle(color: Colors.red, fontSize: 22, fontWeight: FontWeight.w500)
+                    )
+                  ]
                 )
-              ]
-            )
-          ),
+              ),
+            ],
+          )          
         ),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 32),

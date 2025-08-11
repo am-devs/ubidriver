@@ -34,10 +34,9 @@ class InvoiceLine extends ProductLine {
 }
 
 class ReturnLine extends ProductLine {
-  final String lote;
   final String reason;
 
-  ReturnLine({required this.lote, required this.reason, required super.product, required super.quantity});
+  ReturnLine({required this.reason, required super.product, required super.quantity});
 }
 
 class Invoice {
@@ -50,7 +49,17 @@ class Invoice {
   List<InvoiceLine> lines = [];
   Map<int, ReturnLine> returns = {};
 
-  double get totalQuantity => lines.map((p) => p.quantity).reduce((value, element) => value + element);
+  double get totalQuantity {
+    final double totalInvoice = lines.map((p) => p.quantity).reduce((value, element) => value + element);
+
+    if (returns.isEmpty) {
+      return totalInvoice;
+    }
+
+    final double totalReturn = returns.values.map((p) => p.quantity).reduce((value, element) => value + element);
+
+    return totalInvoice - totalReturn;
+  }
 
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
 }

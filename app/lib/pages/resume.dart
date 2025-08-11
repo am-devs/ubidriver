@@ -80,13 +80,12 @@ class ResumePage extends StatelessWidget {
             )
           ),
         ),
-        ElevatedButton(
-          style: appButtonStyle,
+        AppButton(
           onPressed: () {
             Provider.of<AppState>(context, listen: false).advanceState();
             Navigator.of(context).pushNamed("/ending");
           },
-          child: const Text("CONFIRMAR DESPACHO", style: TextStyle(color: Colors.white),)
+          label: "CONFIRMAR DESPACHO"
         )
       ],
     );

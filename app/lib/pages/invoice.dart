@@ -4,23 +4,62 @@ import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+class _ReturningLineCard extends StatelessWidget {
+  final ReturnLine line;
+
+  _ReturningLineCard({required this.line});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      color: Colors.blueGrey.shade100,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+        title: Text(
+          line.product.name.toUpperCase(),
+          style: TextStyle(color:Colors.black, fontWeight: FontWeight.w400),
+        ),
+        trailing: Text(
+          "-${line.quantity.toString()}",
+          style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+        )
+      )
+    );
+  }
+
+}
+
 class _InvoiceLineTableState extends State<_InvoiceLineTable> {
   Set<int> _selections = {};
 
   @override
   Widget build(BuildContext context) {
-    const buttonStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold);
+    ProductLine line;
+    bool isSelected;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ListView.builder(
-          padding: EdgeInsets.only(bottom: 32),
           shrinkWrap: true,
+          padding: EdgeInsets.zero,
           itemCount: widget.lines.length,
           itemBuilder: (context, index) {
+            line = widget.lines[index];
+
+            if (line is ReturnLine) {
+              return _ReturningLineCard(line: line as ReturnLine,);
+            }
+    
+            isSelected = _selections.contains(index);
+
             return Card(
               elevation: 1,
-              color: Color.fromRGBO(255, 248, 248, 1),
+              color: isSelected ? Colors.red : Color.fromRGBO(255, 248, 248, 1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
                 side: BorderSide(
@@ -29,15 +68,15 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
               ),
               child: ListTile(
                 contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                selected: _selections.contains(index),
+                selected: isSelected,
                 title: Text(
-                  widget.lines[index].product.name.toUpperCase(),
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400),
+                  line.product.name.toUpperCase(),
+                  style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.w400),
                 ),
-                enabled: widget.lines[index] is InvoiceLine,
+                enabled: line is InvoiceLine,
                 trailing: Text(
-                  widget.lines[index].quantity.toString(),
-                  style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  line.quantity.toString(),
+                  style: TextStyle(color: isSelected ? Colors.white : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 onTap: () {
                   setState(() {
@@ -52,13 +91,20 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
             );
           }
         ),
+        Padding(
+          padding: EdgeInsets.only(bottom: 16, top: 8, right: 16),
+          child: Text(
+            widget.total.toString(),
+            textAlign: TextAlign.end,
+            style: TextStyle(color: Colors.red, fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 16,
           children: [
-            ElevatedButton(
-              style: appButtonStyle,
-              child: const Text("CONFIRMAR", style: buttonStyle,),
+            AppButton(
+              label: "CONFIRMAR",
               onPressed: () {
                 final state = Provider.of<AppState>(context, listen: false);
 
@@ -68,8 +114,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
                 Navigator.of(context).pushNamed("/resume");
               },
             ),
-            ElevatedButton(   
-              style: appButtonStyle,     
+            AppButton(
               onPressed: _selections.isEmpty ? null : () {
                 // Selected lines will always be InvoiceLine
                 Provider.of<AppState>(context, listen: false).setReturnLines(_selections.map((s) => widget.lines[s] as InvoiceLine).toList());
@@ -80,7 +125,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
 
                 Navigator.of(context).pushNamed("/return");
               },
-              child: const Text("DEVOLUCION", style: buttonStyle,)
+              label: "DEVOLUCION"
             )
           ],
         )
@@ -91,8 +136,9 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
 
 class _InvoiceLineTable extends StatefulWidget {
   final List<ProductLine> lines;
+  final double total;
 
-  _InvoiceLineTable({required this.lines});
+  _InvoiceLineTable({required this.lines, required this.total});
 
   @override
   State<StatefulWidget> createState() => _InvoiceLineTableState();
@@ -131,6 +177,13 @@ class InvoicePage extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: 24, horizontal: 32),
             child: Column(
               children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Image(
+                    image: AssetImage("assets/logo2.png"),
+                    width: 128,
+                  ),
+                ),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
                   child: SizedBox(
@@ -158,7 +211,7 @@ class InvoicePage extends StatelessWidget {
                   ],
                 ),
                 if (lines.isNotEmpty)
-                  _InvoiceLineTable(lines: lines)
+                  _InvoiceLineTable(lines: lines, total: invoice.totalQuantity,)
               ],
             )
           )

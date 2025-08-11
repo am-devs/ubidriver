@@ -120,6 +120,30 @@ final ButtonStyle appButtonStyle = ElevatedButton.styleFrom(
   )
 );
 
+class AppButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final String label;
+  final Color? backgroundColor;
+
+  AppButton({this.onPressed, required this.label, this.backgroundColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+        backgroundColor: backgroundColor ?? Colors.red,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12)
+        )
+      ),
+      onPressed: onPressed,
+      child: Text(label, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600))
+    );
+  }
+
+}
+
 class AppBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
