@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 // Debug only
 const List<String> selections = ["M-1", "M-2", "M-3"];
 
-const int limitQuantity = 30;
+
 
 class _ProductStep extends StatefulWidget {
   final double maxQuantity;
@@ -156,11 +156,13 @@ class _ReturnPageState extends State<ReturnPage> {
                 
                 state.returnInvoice(_returnData);
 
-                if (_returnData.values.map((value) => value.quantity).reduce((value, element) => value + element) > limitQuantity) {
+                if (state.invoice!.needsApproval) {
                   state.advanceState();
+                  state.setInvoiceApproval();
+                  Navigator.of(context).pushNamed("/approval");
+                } else {
+                  Navigator.of(context).pop();
                 }
-
-                Navigator.of(context).pop();
               }
             }
           },

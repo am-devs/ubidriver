@@ -1,3 +1,4 @@
+import 'package:driver_return/pages/approval.dart';
 import 'package:driver_return/pages/ending.dart';
 import 'package:driver_return/pages/invoice.dart';
 import 'package:driver_return/pages/resume.dart';
@@ -39,7 +40,8 @@ class MyApp extends StatelessWidget {
             '/invoice': (context) => InvoicePage(),
             '/resume': (context) => ResumePage(),
             '/return': (context) => ReturnPage(),
-            '/ending': (context) => EndingPage()
+            '/ending': (context) => EndingPage(),
+            '/approval': (context) => ApprovalPage()
           };
 
           WidgetBuilder builder = routes[settings.name]!;

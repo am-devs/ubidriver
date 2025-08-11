@@ -1,4 +1,5 @@
 
+import 'package:driver_return/models.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -178,5 +179,52 @@ class AppScaffold extends StatelessWidget {
       )
     );
   }
+}
 
+class AppInvoiceCard extends StatelessWidget {
+  final Invoice invoice;
+  final GestureTapCallback? onTap;
+
+  AppInvoiceCard({required this.invoice, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          width: 2.0,
+          color: Colors.red
+        )
+      ),
+      color: invoice.isApproved ? Colors.white : Colors.red.shade50,
+      child: ListTile(
+        enabled: invoice.isApproved,
+        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        leading: FlutterLogo(size: 72.0),
+        title: Text(
+          invoice.code,
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: RichText(
+          text: TextSpan(
+            text: "CLIENTE: ",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            children: [
+              TextSpan(text: invoice.customer.name.toUpperCase(), style: TextStyle(color: Colors.red))
+            ]
+          )
+        ),
+        trailing: Icon(
+          Icons.keyboard_arrow_right,
+          size: 48,
+          color: Colors.red.shade700,
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
 }

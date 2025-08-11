@@ -12,7 +12,7 @@ enum DeliveryState {
 }
 
 class AppState extends ChangeNotifier {
-  List<InvoiceLine> _returnLines = [];
+  final List<InvoiceLine> _returnLines = [];
   Invoice? _invoice;
   DeliveryState _status = DeliveryState.searchingInvoice;
 
@@ -41,6 +41,14 @@ class AppState extends ChangeNotifier {
     };
 
     print("State $_status");
+
+    notifyListeners();
+  }
+
+  void resetState() {
+    _status = DeliveryState.searchingInvoice;
+    _invoice = null;
+    _returnLines.clear();
 
     notifyListeners();
   }
@@ -76,6 +84,18 @@ class AppState extends ChangeNotifier {
     if (_invoice != null) {
       _invoice!.returns = lines;
     }
+
+    notifyListeners();
+  }
+
+  void setInvoiceApproval() {
+    _invoice?.prepareApproval();
+
+    notifyListeners();
+  }
+
+  void approveInvoice() {
+    _invoice?.approve();
 
     notifyListeners();
   }

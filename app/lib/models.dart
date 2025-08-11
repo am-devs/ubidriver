@@ -39,15 +39,23 @@ class ReturnLine extends ProductLine {
   ReturnLine({required this.reason, required super.product, required super.quantity});
 }
 
+class _InvoiceApproval {
+  bool approved = false;
+}
+
 class Invoice {
+  static const int _limitQuantity = 30;
+
   final String code;
   final DateTime date;
   final int id;
   final String organization;
   final Customer customer;
-  bool confirm = false;
-  List<InvoiceLine> lines = [];
+  final List<InvoiceLine> lines = [];
   Map<int, ReturnLine> returns = {};
+  _InvoiceApproval? _approval;
+
+  bool get isApproved => _approval == null || _approval?.approved == true;
 
   double get totalQuantity {
     final double totalInvoice = lines.map((p) => p.quantity).reduce((value, element) => value + element);
@@ -61,5 +69,17 @@ class Invoice {
     return totalInvoice - totalReturn;
   }
 
+  bool get needsApproval => returns.isNotEmpty
+    ? returns.values.map((value) => value.quantity).reduce((value, element) => value + element) > _limitQuantity
+    : false;
+
   Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
+
+  void prepareApproval() {
+    _approval = _InvoiceApproval();
+  }
+
+  void approve() {
+    _approval!.approved = true;
+  }
 }

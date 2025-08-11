@@ -73,7 +73,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
                   line.product.name.toUpperCase(),
                   style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.w400),
                 ),
-                enabled: line is InvoiceLine,
+                enabled: widget.canSelect && line is InvoiceLine,
                 trailing: Text(
                   line.quantity.toString(),
                   style: TextStyle(color: isSelected ? Colors.white : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
@@ -109,26 +109,26 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
                 final state = Provider.of<AppState>(context, listen: false);
 
                 state.advanceState();
-                state.advanceState();
 
                 Navigator.of(context).pushNamed("/resume");
               },
             ),
-            AppButton(
-              onPressed: _selections.isEmpty ? null : () {
-                // Selected lines will always be InvoiceLine
-                Provider.of<AppState>(context, listen: false).setReturnLines(_selections.map((s) => widget.lines[s] as InvoiceLine).toList());
+            if (widget.canSelect)
+              AppButton(
+                onPressed: _selections.isEmpty ? null : () {
+                  // Selected lines will always be InvoiceLine
+                  Provider.of<AppState>(context, listen: false).setReturnLines(_selections.map((s) => widget.lines[s] as InvoiceLine).toList());
 
-                setState(() {
-                  _selections.clear();
-                });
+                  setState(() {
+                    _selections.clear();
+                  });
 
-                Navigator.of(context).pushNamed("/return");
-              },
-              label: "DEVOLUCION"
-            )
-          ],
-        )
+                  Navigator.of(context).pushNamed("/return");
+                },
+                label: "DEVOLUCION"
+              )
+            ],
+          )
       ],
     );
   }
@@ -137,8 +137,9 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
 class _InvoiceLineTable extends StatefulWidget {
   final List<ProductLine> lines;
   final double total;
+  final bool canSelect;
 
-  _InvoiceLineTable({required this.lines, required this.total});
+  _InvoiceLineTable(this.lines, this.total, this.canSelect);
 
   @override
   State<StatefulWidget> createState() => _InvoiceLineTableState();
@@ -147,7 +148,9 @@ class _InvoiceLineTable extends StatefulWidget {
 class InvoicePage extends StatelessWidget {
     @override
     Widget build(BuildContext context) {
-      Invoice? invoice = Provider.of<AppState>(context).invoice!;
+      final state = Provider.of<AppState>(context);
+
+      Invoice invoice = state.invoice!;
       final custom = invoice.customer;
       List<ProductLine> lines = [...invoice.lines, ...invoice.returns.values];
 
@@ -159,7 +162,15 @@ class InvoicePage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              AppBackButton(),
+              state.currentState == DeliveryState.approved 
+                ? IconButton(
+                  onPressed: () {
+                    state.resetState();
+                    Navigator.of(context).pushNamed("/search");
+                  },
+                  icon: const Icon(Icons.close, size: 48,)
+                )
+                : AppBackButton(),
               Padding(
                 padding: EdgeInsets.only(right: 16),
                 child: Text(
@@ -211,7 +222,11 @@ class InvoicePage extends StatelessWidget {
                   ],
                 ),
                 if (lines.isNotEmpty)
-                  _InvoiceLineTable(lines: lines, total: invoice.totalQuantity,)
+                  _InvoiceLineTable(
+                    lines,
+                    invoice.totalQuantity,
+                    !invoice.needsApproval
+                  )
               ],
             )
           )

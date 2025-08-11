@@ -82,7 +82,14 @@ class ResumePage extends StatelessWidget {
         ),
         AppButton(
           onPressed: () {
-            Provider.of<AppState>(context, listen: false).advanceState();
+            final state = Provider.of<AppState>(context, listen: false);
+            
+            state.advanceState();
+
+            if (state.currentState == DeliveryState.approved) {
+              state.advanceState();
+            }
+
             Navigator.of(context).pushNamed("/ending");
           },
           label: "CONFIRMAR DESPACHO"
