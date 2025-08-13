@@ -14,7 +14,7 @@ void main() {
   runApp(MultiProvider(
     providers: [
       Provider(create: (context) => ApiService()),
-      ChangeNotifierProvider(create:(context) => AppState()),
+      ChangeNotifierProvider(create: (context) => AppState()),
     ],
     child: MyApp(),
   ));
@@ -25,29 +25,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        scaffoldMessengerKey: scaffoldMessengerKey,
-        title: 'Namer App',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent.shade400)
-        ),
-        home: LoginPage(),
-        onGenerateRoute: (settings) {
-          var routes = <String, WidgetBuilder> {
-            '/login': (context) => LoginPage(),
-            '/search': (context) => SearchPage(),
-            '/invoice': (context) => InvoicePage(),
-            '/resume': (context) => ResumePage(),
-            '/return': (context) => ReturnPage(),
-            '/ending': (context) => EndingPage(),
-            '/approval': (context) => ApprovalPage()
-          };
+    return FutureBuilder(
+      future: Provider.of<AppState>(context, listen: false).loadState(),
+      builder: (context, snapshot) {
+        print("Se cargó todo?: ${snapshot.data}");
 
-          WidgetBuilder builder = routes[settings.name]!;
+        return MaterialApp(
+          scaffoldMessengerKey: scaffoldMessengerKey,
+          title: 'GTT Despacho',
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent.shade400)
+          ),
+          home: switch (snapshot.data) {
+            DeliveryState.approved => ResumePage(),
+            DeliveryState.editingInvoice => InvoicePage(),
+            DeliveryState.waitingForApproval => ApprovalPage(),
+            DeliveryState.confirmed => EndingPage(),
+            DeliveryState.searchingInvoice => SearchPage(),
+            null => LoginPage()
+          },
+          onGenerateRoute: (settings) {
+            var routes = <String, WidgetBuilder> {
+              '/login': (context) => LoginPage(),
+              '/search': (context) => SearchPage(),
+              '/invoice': (context) => InvoicePage(),
+              '/resume': (context) => ResumePage(),
+              '/return': (context) => ReturnPage(),
+              '/ending': (context) => EndingPage(),
+              '/approval': (context) => ApprovalPage()
+            };
 
-          return MaterialPageRoute(builder: (ctx) => builder(ctx));
-        }
-      );
+            WidgetBuilder builder = routes[settings.name]!;
+            return MaterialPageRoute(builder: (ctx) => builder(ctx));
+          }
+        );
+      }
+    );
   }
 }

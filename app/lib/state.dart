@@ -29,7 +29,7 @@ class _InvoiceApproval {
   };
 }
 
-class SnapShot {
+class _SnapShot {
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -64,7 +64,6 @@ class SnapShot {
   }
 }
 
-@JsonSerializable()
 class AppState extends ChangeNotifier {
   final List<InvoiceLine> _returnLines = [];
   Invoice? _invoice;
@@ -74,8 +73,6 @@ class AppState extends ChangeNotifier {
   bool get isApproved => _approval == null || _approval?.approved == true;
   Invoice? get invoice => _invoice;
   DeliveryState get currentState => _status;
-
-  AppState();
 
   void revertState() {
     _status = switch (_status) {
@@ -98,7 +95,7 @@ class AppState extends ChangeNotifier {
       DeliveryState.confirmed => DeliveryState.searchingInvoice,
     };
 
-    SnapShot.saveSnapshot(jsonEncode(toJson()));
+    _SnapShot.saveSnapshot(jsonEncode(toJson()));
 
     print("State $_status");
 
@@ -110,9 +107,27 @@ class AppState extends ChangeNotifier {
     _invoice = null;
     _returnLines.clear();
 
-    SnapShot.saveSnapshot(jsonEncode(toJson()));
+    _SnapShot.saveSnapshot(jsonEncode(toJson()));
 
     notifyListeners();
+  }
+
+  Future<DeliveryState> loadState() async {
+    try {
+      final data = await _SnapShot.loadState();
+
+      if (data.isEmpty) return DeliveryState.searchingInvoice;
+
+      _invoice = data["invoice"] != null ? Invoice.fromJson(data["invoice"]) : null;
+      _status = DeliveryState.values[data["status"] ?? 0];
+      _approval = data["approval"] != null ? _InvoiceApproval.fromJson(data["approval"]) : null;
+
+      print("Estado cargado exitosamente");
+      return _status;
+    } catch (e) {
+      print("Error cargando estado: $e");
+      return DeliveryState.searchingInvoice;
+    }
   }
 
   void setReturnLines(List<InvoiceLine> lines) {
@@ -129,6 +144,8 @@ class AppState extends ChangeNotifier {
   }
 
   void setInvoice(Invoice inv) {
+    print("Setting invoice!");
+
     _invoice = inv;
 
     notifyListeners();
@@ -160,16 +177,6 @@ class AppState extends ChangeNotifier {
     _approval!.approved = true;
 
     notifyListeners();
-  }
-
-  factory AppState.fromJson(Map<String, dynamic> json) {
-    final instance = AppState();
-
-    instance._invoice = Invoice.fromJson(json["invoice"]);
-    instance._status = json["status"] as DeliveryState;
-    instance._approval = _InvoiceApproval.fromJson(json["approval"]);
-
-    return instance;
   }
 
   Map<String, dynamic> toJson() => {

@@ -71,6 +71,10 @@ Invoice _$InvoiceFromJson(Map<String, dynamic> json) => Invoice(
     id: (json['id'] as num).toInt(),
     organization: json['organization'] as String,
     customer: Customer.fromJson(json['customer'] as Map<String, dynamic>),
+    lines:
+        (json['lines'] as List<dynamic>?)
+            ?.map((e) => InvoiceLine.fromJson(e as Map<String, dynamic>))
+            .toList(),
   )
   ..returns = (json['returns'] as Map<String, dynamic>).map(
     (k, e) =>
@@ -84,4 +88,5 @@ Map<String, dynamic> _$InvoiceToJson(Invoice instance) => <String, dynamic>{
   'organization': instance.organization,
   'customer': instance.customer,
   'returns': instance.returns.map((k, e) => MapEntry(k.toString(), e)),
+  'lines': instance.lines,
 };

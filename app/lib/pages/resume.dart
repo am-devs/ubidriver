@@ -84,6 +84,7 @@ class ResumePage extends StatelessWidget {
           onPressed: () {
             final state = Provider.of<AppState>(context, listen: false);
             
+            state.clearInvoice();
             state.advanceState();
 
             if (state.currentState == DeliveryState.approved) {

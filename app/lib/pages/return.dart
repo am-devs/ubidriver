@@ -157,8 +157,8 @@ class _ReturnPageState extends State<ReturnPage> {
                 state.returnInvoice(_returnData);
 
                 if (state.invoice!.needsApproval) {
-                  state.advanceState();
                   state.setInvoiceApproval();
+                  state.advanceState();
                   Navigator.of(context).pushNamed("/approval");
                 } else {
                   Navigator.of(context).pop();

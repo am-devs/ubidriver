@@ -79,11 +79,13 @@ class Invoice {
   final int id;
   final String organization;
   final Customer customer;
-  final List<InvoiceLine> lines = [];
+  final List<InvoiceLine> _lines;
   Map<int, ReturnLine> returns = {};
 
+  List<InvoiceLine> get lines => _lines;
+
   double get totalQuantity {
-    final double totalInvoice = lines.map((p) => p.quantity).reduce((value, element) => value + element);
+    final double totalInvoice = _lines.map((p) => p.quantity).reduce((value, element) => value + element);
 
     if (returns.isEmpty) {
       return totalInvoice;
@@ -98,9 +100,18 @@ class Invoice {
     ? returns.values.map((value) => value.quantity).reduce((value, element) => value + element) > _limitQuantity
     : false;
 
-  Invoice({required this.code, required this.date, required this.id, required this.organization, required this.customer});
+  Invoice({
+    required this.code,
+    required this.date,
+    required this.id,
+    required this.organization,
+    required this.customer,
+    List<InvoiceLine>? lines,
+  }): _lines = lines ?? [];
 
   factory Invoice.fromJson(Map<String, dynamic> json) => _$InvoiceFromJson(json);
 
   Map<String, dynamic> toJson() => _$InvoiceToJson(this);
+
+  void addLine(InvoiceLine line) => _lines.add(line);
 }

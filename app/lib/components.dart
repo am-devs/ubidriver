@@ -151,7 +151,13 @@ class AppBackButton extends StatelessWidget {
     return IconButton(
       onPressed: () {
         Provider.of<AppState>(context, listen: false).revertState();
-        Navigator.of(context).pop();
+        final nav = Navigator.of(context);
+        
+        if (nav.canPop()) {
+          nav.pop();
+        } else {
+          nav.pushNamed("/search");
+        }
       },
       icon: const Icon(Icons.keyboard_arrow_left, size: 48,)
     );

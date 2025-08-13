@@ -60,19 +60,19 @@ class _SearchPageState extends State<SearchPage> {
       customer: const Customer(name: "David Linarez", id: 1, address: "Hello world", vat: "123"),
     );
 
-    invoice.lines.add(InvoiceLine(
+    invoice.addLine(InvoiceLine(
       product: const Product(id: 1, name: "Product"), 
       quantity: 100, 
       uom: "Bultos"
     ));
 
-    invoice.lines.add(InvoiceLine(
+    invoice.addLine(InvoiceLine(
       product: const Product(id: 2, name: "Productos"), 
       quantity: 50,
       uom: "Bultos"
     ));
 
-    invoice.lines.add(InvoiceLine(
+    invoice.addLine(InvoiceLine(
       product: const Product(id: 3, name: "Producto"), 
       quantity: 150,
       uom: "Bultos"
