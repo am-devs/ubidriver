@@ -1,7 +1,5 @@
-import requests
 from psycopg_pool import ConnectionPool
 from os import getenv
-from templates import get_record_id_from_response
 
 CONNECTION = "dbname={} user={} password={} host={} port={}".format(
     getenv("DB_NAME"),
@@ -51,17 +49,3 @@ class Database:
         self._cursor.close()
         self._cursor = None
         pool.putconn(self._connection)
-
-URL = getenv("AD_URL")
-
-def sent_record_and_get_id(data: str):
-    response = requests.post(URL, headers={"Content-Type": "application/xml; charset=utf-8"}, data=data)
-
-    response.raise_for_status()
-
-    record = 0
-
-    if response.status_code == 200:
-        record = get_record_id_from_response(response.content)
-
-    return record

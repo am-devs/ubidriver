@@ -12,7 +12,7 @@ def login(data: dict):
     else:
         return body
     
-def get_user(token):
+def get_user_data(token):
     req = requests.get(auth_api + "/v1/users", headers={"Authorization": f"Bearer {token}"})
     body = req.json()
 

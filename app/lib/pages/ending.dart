@@ -1,4 +1,5 @@
 import 'package:driver_return/components.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -66,7 +67,12 @@ class EndingPage extends StatelessWidget {
           child: ElevatedButton.icon(
             style: appButtonStyle,
             onPressed: () {
-              Provider.of<AppState>(context, listen: false).advanceState();
+              final state = Provider.of<AppState>(context, listen: false);
+              
+              state.advanceState();
+
+              AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
+
               Navigator.of(context).pushNamed("/search");
             },
             icon: const Icon(

@@ -1,5 +1,6 @@
 import 'package:driver_return/models.dart';
 import 'package:driver_return/components.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -109,6 +110,8 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
                 final state = Provider.of<AppState>(context, listen: false);
 
                 state.advanceState();
+
+                AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
 
                 Navigator.of(context).pushNamed("/resume");
               },

@@ -29,7 +29,18 @@ class _InvoiceApproval {
   };
 }
 
-class _SnapShot {
+abstract class Memento {
+  void loadFromSnapshot(AppSnapshot snapshot);
+  Map<String, dynamic> toJson();
+}
+
+class AppSnapshot {
+  final Map<String, dynamic> data;
+
+  AppSnapshot(this.data);
+
+  AppSnapshot.fromMemento(Memento object) : data = object.toJson();
+
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -42,29 +53,36 @@ class _SnapShot {
     return File('$path/data.json');
   }
 
-  static Future<File> saveSnapshot(String data) async {
-    final file = await _localFile;
+  AppSnapshot withData(Memento object) {
+      data.addAll(object.toJson());
 
-    return file.writeAsString(data);
+      return this;
   }
 
-  static Future<Map<String, dynamic>> loadState() async {
+  Future<File> saveSnapshot() async {
+    final file = await _localFile;
+
+    return file.writeAsString(jsonEncode(data));
+  }
+
+  static Future<AppSnapshot?> tryToLoad() async {
     try {
       final file = await _localFile;
 
       // Read the file
       final contents = await file.readAsString();
+      final data =  jsonDecode(contents);
 
-      return jsonDecode(contents);
+      return AppSnapshot(data);
     } catch (e) {
       print("Error loading state: $e");
 
-      return {};
+      return null;
     }
   }
 }
 
-class AppState extends ChangeNotifier {
+class AppState extends ChangeNotifier implements Memento {
   final List<InvoiceLine> _returnLines = [];
   Invoice? _invoice;
   _InvoiceApproval? _approval;
@@ -95,8 +113,6 @@ class AppState extends ChangeNotifier {
       DeliveryState.confirmed => DeliveryState.searchingInvoice,
     };
 
-    _SnapShot.saveSnapshot(jsonEncode(toJson()));
-
     print("State $_status");
 
     notifyListeners();
@@ -107,27 +123,20 @@ class AppState extends ChangeNotifier {
     _invoice = null;
     _returnLines.clear();
 
-    _SnapShot.saveSnapshot(jsonEncode(toJson()));
-
     notifyListeners();
   }
 
-  Future<DeliveryState> loadState() async {
-    try {
-      final data = await _SnapShot.loadState();
+  @override
+  void loadFromSnapshot(AppSnapshot snapshot) {
+      if (snapshot.data.isEmpty) {
+        return;
+      }
 
-      if (data.isEmpty) return DeliveryState.searchingInvoice;
-
-      _invoice = data["invoice"] != null ? Invoice.fromJson(data["invoice"]) : null;
-      _status = DeliveryState.values[data["status"] ?? 0];
-      _approval = data["approval"] != null ? _InvoiceApproval.fromJson(data["approval"]) : null;
+      _invoice = snapshot.data["invoice"] != null ? Invoice.fromJson(snapshot.data["invoice"]) : null;
+      _status = DeliveryState.values[snapshot.data["status"] ?? 0];
+      _approval = snapshot.data["approval"] != null ? _InvoiceApproval.fromJson(snapshot.data["approval"]) : null;
 
       print("Estado cargado exitosamente");
-      return _status;
-    } catch (e) {
-      print("Error cargando estado: $e");
-      return DeliveryState.searchingInvoice;
-    }
   }
 
   void setReturnLines(List<InvoiceLine> lines) {
@@ -179,6 +188,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     "invoice": _invoice?.toJson(),
     "status": _status.index,

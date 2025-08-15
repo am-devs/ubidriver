@@ -26,8 +26,36 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Provider.of<AppState>(context, listen: false).loadState(),
+      future: AppSnapshot.tryToLoad().then(<Snapshot>(snap) async {
+        if (context.mounted && snap != null) {
+          final api = Provider.of<ApiService>(context);
+          
+          api.loadFromSnapshot(snap);
+
+          await api.validateToken();
+
+          return snap;
+        }
+
+        return false;
+      }),
       builder: (context, snapshot) {
+        DeliveryState? status;
+
+        if (snapshot.hasData && snapshot.data) {
+          final state = Provider.of<AppState>(context, listen: false);
+
+          state.loadFromSnapshot(snapshot.data!);
+
+          if (Provider.of<ApiService>(context).isLoggedIn) {
+            if (state.currentState == DeliveryState.confirmed) {
+              state.advanceState();
+            }
+
+            status = state.currentState;
+          }
+        }
+
         print("Se cargó todo?: ${snapshot.data}");
 
         return MaterialApp(
@@ -37,13 +65,12 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent.shade400)
           ),
-          home: switch (snapshot.data) {
+          home: switch (status) {
             DeliveryState.approved => ResumePage(),
             DeliveryState.editingInvoice => InvoicePage(),
             DeliveryState.waitingForApproval => ApprovalPage(),
-            DeliveryState.confirmed => EndingPage(),
             DeliveryState.searchingInvoice => SearchPage(),
-            null => LoginPage()
+            _ => LoginPage()
           },
           onGenerateRoute: (settings) {
             var routes = <String, WidgetBuilder> {

@@ -1,8 +1,7 @@
 import datetime
 from pydantic import BaseModel
-from services import Database, sent_record_and_get_id
+from services import Database
 from passlib.context import CryptContext
-import templates
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -57,9 +56,7 @@ class Invoice(BaseModel):
 
     @staticmethod
     def confirm_invoice(invoice_id: int):
-        data = templates.get_invoice_confirm_xml(invoice_id)
-
-        return sent_record_and_get_id(data)
+        return invoice_id
     
     @staticmethod
     def confirm_deliveries(invoice_id: int):
@@ -80,14 +77,6 @@ AND mi.docstatus='CO'""", invoice_id)
         if not dels:
             return {}
         
-        data = templates.get_deliveries_templates(list(dels.keys()))
-
-        for temp in data:
-            result = sent_record_and_get_id(temp)
-
-            if result in dels:
-                dels[result] = True 
-
         return dels
 
     @staticmethod
@@ -139,29 +128,12 @@ class Return(BaseModel):
     c_bpartner_id: int
 
     def create(self, driver_id: int, driver_name: str):
-        data = templates.get_return_order_template(
-            f"Orden creada por el chofer: {driver_name} ({driver_id})",
-            self.c_bpartner_id
-        )
-
-        return sent_record_and_get_id(data)
+        return 0
     
 class ReturnLine(BaseModel):
     product_id: int
     quantity: int
     reason: str
-
-def create_return_lines(order_id: int, records: list[ReturnLine]):
-    data = templates.get_return_line_template(order_id, records)
-    results = {r.product_id: 0 for r in records}
-
-    for pid, data in data.items():
-        result = sent_record_and_get_id(data)
-
-        if result:
-            results[pid] = result
-
-    return results
 
 def check_for_driver(cedula: str):
     with Database() as db:

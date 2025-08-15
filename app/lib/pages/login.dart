@@ -1,15 +1,18 @@
+import 'package:driver_return/services.dart';
+import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class _LoginForm extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _LoginFormState();
 }
 
-
 class _LoginFormState extends State<_LoginForm> {
   final _formGlobalKey = GlobalKey<FormState>();
   String _username = "";
   String _password = "";
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +23,7 @@ class _LoginFormState extends State<_LoginForm> {
           spacing: 16,
           children: [
             TextFormField(
+              enabled: !_loading,
               decoration: InputDecoration(
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey.shade50),
@@ -59,6 +63,7 @@ class _LoginFormState extends State<_LoginForm> {
               },
             ),
             TextFormField(
+              enabled: !_loading,
               decoration: InputDecoration(
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey.shade50),
@@ -105,18 +110,33 @@ class _LoginFormState extends State<_LoginForm> {
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 32),
                   backgroundColor: Colors.red
                 ),
-                onPressed: () async {
+                onPressed: _loading ? null : () async {
                     if (!_formGlobalKey.currentState!.validate()) {
                       return;
                     }
 
                     _formGlobalKey.currentState!.save();
 
+
                     try {
+                      setState(() {
+                        _loading = true;
+                      });
+
                       print("$_username - $_password");
 
-                      if(context.mounted) {
-                        Navigator.pushNamed(context, '/search');
+                      final api = Provider.of<ApiService>(context, listen: false);
+                      final result = await api.authenticate(_username, _password);
+
+                      if (context.mounted) {
+                        if (result) {
+                          AppSnapshot.fromMemento(api).saveSnapshot();
+                          Navigator.pushNamed(context, '/search');
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: const Text("Las credenciales no coinciden con las de ningún usuario registrado"),
+                          ));
+                        }
                       }
                     } catch(e) {
                       print(e);
@@ -126,6 +146,10 @@ class _LoginFormState extends State<_LoginForm> {
                           content: Text('Ocurrió un error: $e'),
                         ));
                       }
+                    } finally {
+                      setState(() {
+                        _loading = false;
+                      });
                     }
                 },
                 child: const Text(
@@ -153,7 +177,7 @@ class LoginPage extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/login.png"),
+            image: const AssetImage("assets/login.png"),
             fit: BoxFit.cover,
             opacity: 0.5
           )
@@ -165,7 +189,7 @@ class LoginPage extends StatelessWidget {
             spacing: 20,
             children: [
               Image(
-                image: AssetImage("assets/logo.png"),
+                image: const AssetImage("assets/logo.png"),
               ),
               const Text(
                 "BIENVENIDO",

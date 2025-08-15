@@ -1,5 +1,6 @@
 
 import 'package:driver_return/models.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -150,7 +151,12 @@ class AppBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        Provider.of<AppState>(context, listen: false).revertState();
+        final state = Provider.of<AppState>(context, listen: false);
+
+        state.revertState();
+
+        AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context)).saveSnapshot();
+
         final nav = Navigator.of(context);
         
         if (nav.canPop()) {

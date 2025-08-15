@@ -1,5 +1,6 @@
 import 'package:driver_return/models.dart';
 import 'package:driver_return/components.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -159,6 +160,7 @@ class _ReturnPageState extends State<ReturnPage> {
                 if (state.invoice!.needsApproval) {
                   state.setInvoiceApproval();
                   state.advanceState();
+                  AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
                   Navigator.of(context).pushNamed("/approval");
                 } else {
                   Navigator.of(context).pop();
