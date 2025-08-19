@@ -8,14 +8,14 @@ part of 'models.dart';
 
 Customer _$CustomerFromJson(Map<String, dynamic> json) => Customer(
   name: json['name'] as String,
-  id: (json['id'] as num).toInt(),
+  customerId: (json['customer_id'] as num).toInt(),
   address: json['address'] as String,
   vat: json['vat'] as String,
 );
 
 Map<String, dynamic> _$CustomerToJson(Customer instance) => <String, dynamic>{
   'name': instance.name,
-  'id': instance.id,
+  'customer_id': instance.customerId,
   'address': instance.address,
   'vat': instance.vat,
 };
@@ -66,27 +66,31 @@ Map<String, dynamic> _$ReturnLineToJson(ReturnLine instance) =>
     };
 
 Invoice _$InvoiceFromJson(Map<String, dynamic> json) => Invoice(
-    code: json['code'] as String,
-    date: DateTime.parse(json['date'] as String),
-    id: (json['id'] as num).toInt(),
-    organization: json['organization'] as String,
-    customer: Customer.fromJson(json['customer'] as Map<String, dynamic>),
-    lines:
-        (json['lines'] as List<dynamic>?)
-            ?.map((e) => InvoiceLine.fromJson(e as Map<String, dynamic>))
-            .toList(),
-  )
-  ..returns = (json['returns'] as Map<String, dynamic>).map(
-    (k, e) =>
-        MapEntry(int.parse(k), ReturnLine.fromJson(e as Map<String, dynamic>)),
-  );
+  code: json['code'] as String,
+  date: DateTime.parse(json['date_invoice'] as String),
+  id: (json['invoice_id'] as num).toInt(),
+  organization: json['organization'] as String,
+  customer: Customer.fromJson(json['customer'] as Map<String, dynamic>),
+  lines:
+      (json['lines'] as List<dynamic>?)
+          ?.map((e) => InvoiceLine.fromJson(e as Map<String, dynamic>))
+          .toList(),
+);
 
 Map<String, dynamic> _$InvoiceToJson(Invoice instance) => <String, dynamic>{
   'code': instance.code,
-  'date': instance.date.toIso8601String(),
-  'id': instance.id,
+  'date_invoice': instance.date.toIso8601String(),
+  'invoice_id': instance.id,
   'organization': instance.organization,
   'customer': instance.customer,
-  'returns': instance.returns.map((k, e) => MapEntry(k.toString(), e)),
   'lines': instance.lines,
 };
+
+DevolutionType _$DevolutionTypeFromJson(Map<String, dynamic> json) =>
+    DevolutionType(
+      json['name'] as String,
+      (json['devolution_type_id'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$DevolutionTypeToJson(DevolutionType instance) =>
+    <String, dynamic>{'name': instance.name, 'devolution_type_id': instance.id};

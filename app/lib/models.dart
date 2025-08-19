@@ -5,13 +5,14 @@ part 'models.g.dart';
 @JsonSerializable()
 class Customer {
   final String name;
-  final int id;
+  @JsonKey(name: 'customer_id')
+  final int customerId;
   final String address;
   final String vat;
 
   const Customer({
     required this.name,
-    required this.id,
+    required this.customerId,
     required this.address,
     required this.vat
   });
@@ -75,11 +76,14 @@ class Invoice {
   static const int _limitQuantity = 30;
 
   final String code;
+  @JsonKey(name: 'date_invoice')
   final DateTime date;
+  @JsonKey(name: 'invoice_id')
   final int id;
   final String organization;
   final Customer customer;
   final List<InvoiceLine> _lines;
+  @JsonKey(includeFromJson: false)
   Map<int, ReturnLine> returns = {};
 
   List<InvoiceLine> get lines => _lines;
@@ -114,4 +118,17 @@ class Invoice {
   Map<String, dynamic> toJson() => _$InvoiceToJson(this);
 
   void addLine(InvoiceLine line) => _lines.add(line);
+}
+
+@JsonSerializable()
+class DevolutionType {
+  final String name;
+  @JsonKey(name: 'devolution_type_id')
+  final int id;
+
+  const DevolutionType(this.name, this.id);
+
+  factory DevolutionType.fromJson(Map<String, dynamic> json) => _$DevolutionTypeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DevolutionTypeToJson(this);
 }

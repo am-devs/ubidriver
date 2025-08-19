@@ -54,35 +54,11 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  void _onSubmitted(String value) {
-    final invoice = Invoice(
-      code: "123",
-      date: DateTime.now(),
-      id: 0,
-      organization: "Iancarina",
-      customer: const Customer(name: "David Linarez", id: 1, address: "Hello world", vat: "123"),
-    );
-
-    invoice.addLine(InvoiceLine(
-      product: const Product(id: 1, name: "Product"), 
-      quantity: 100, 
-      uom: "Bultos"
-    ));
-
-    invoice.addLine(InvoiceLine(
-      product: const Product(id: 2, name: "Productos"), 
-      quantity: 50,
-      uom: "Bultos"
-    ));
-
-    invoice.addLine(InvoiceLine(
-      product: const Product(id: 3, name: "Producto"), 
-      quantity: 150,
-      uom: "Bultos"
-    ));
+  Future<void> _onSubmitted(String value) async {
+    var results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
 
     setState(() {
-      _invoices.add(invoice);
+      _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
     });
 
     _searchController.clear();

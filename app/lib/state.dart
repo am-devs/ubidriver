@@ -87,10 +87,18 @@ class AppState extends ChangeNotifier implements Memento {
   Invoice? _invoice;
   _InvoiceApproval? _approval;
   DeliveryState _status = DeliveryState.searchingInvoice;
+  List<DevolutionType> _devolutionTypes = [];
 
   bool get isApproved => _approval == null || _approval?.approved == true;
   Invoice? get invoice => _invoice;
   DeliveryState get currentState => _status;
+  List<DevolutionType> get devolutionTypes => _devolutionTypes;
+
+  void setDevolutionTypes(List<Map<String, dynamic>> array) {
+    _devolutionTypes.addAll(array.map((x) => DevolutionType.fromJson(x)));
+
+    notifyListeners();
+  }
 
   void revertState() {
     _status = switch (_status) {

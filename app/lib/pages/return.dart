@@ -8,8 +8,6 @@ import 'package:provider/provider.dart';
 // Debug only
 const List<String> selections = ["M-1", "M-2", "M-3"];
 
-
-
 class _ProductStep extends StatefulWidget {
   final double maxQuantity;
   final Function(String, double, String) onSave;

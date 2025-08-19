@@ -63,9 +63,11 @@ class ResumePage extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 48),
             child: RichText(
               text: TextSpan(
-                text: 'CLIENTE: ',
+                text: 'FECHA: ',
                 style: boldStyle,
                 children: <TextSpan>[
+                  TextSpan(text: invoice.date.toString().split(' ')[0], style: defaultStyle),
+                  TextSpan(text: "\nCLIENTE: ", style: boldStyle),
                   TextSpan(text: custom.name.toUpperCase(), style: defaultStyle),
                   TextSpan(text: "\nRIF: ", style: boldStyle),
                   TextSpan(text: custom.vat.toUpperCase(), style: defaultStyle),

@@ -155,7 +155,7 @@ class AppBackButton extends StatelessWidget {
 
         state.revertState();
 
-        AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context)).saveSnapshot();
+        AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
 
         final nav = Navigator.of(context);
         
@@ -227,7 +227,9 @@ class AppInvoiceCard extends StatelessWidget {
             text: "CLIENTE: ",
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             children: [
-              TextSpan(text: invoice.customer.name.toUpperCase(), style: TextStyle(color: Colors.red))
+              TextSpan(text: invoice.customer.name.toUpperCase(), style: TextStyle(color: Colors.red)),
+              TextSpan(text: "\nFECHA: ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+              TextSpan(text: invoice.date.toString().split(' ')[0], style: TextStyle(color: Colors.red))
             ]
           )
         ),

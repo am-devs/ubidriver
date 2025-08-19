@@ -8,6 +8,7 @@ services:
       - public
     extra_hosts:
       - "vmtestbd:192.168.59.19"
+      # - "losroques:192.168.254.60"
       - "adempiere-fc-engine:192.168.59.141"
 networks:
   public:

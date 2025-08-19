@@ -3,7 +3,7 @@ import 'package:driver_return/state.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService implements Memento {
-  static final _baseUrl = Uri.parse("http://192.168.1.109:8084/v1");
+  static final _baseUrl = Uri.parse("http://192.168.1.189:8084/v1");
   String _token = "";
 
   bool get isLoggedIn => _token.isNotEmpty;
@@ -56,7 +56,7 @@ class ApiService implements Memento {
 
   Future<T> get<T>(String route) async {
     var response = await http.get(
-      Uri.parse("$_baseUrl/$route"),
+      _baseUrl.resolve(route),
       headers: {"Authorization": "Bearer $_token"}
     ).timeout(const Duration(seconds: 10));
 
@@ -65,15 +65,13 @@ class ApiService implements Memento {
     if(data is Map && data.containsKey("error")) {
       throw Exception(data);
     } else {
-      print("Data: $data");
-
       return data;
     }
   }
 
   Future<T> post<T>(String route, { Object? body }) async {
     var response = await http.post(
-      Uri.parse("$_baseUrl/$route"),
+      _baseUrl.resolve(route),
       body: body != null ? jsonEncode(body) : null,
       headers: {"Authorization": "Bearer $_token", "Content-Type": "application/json"}
     ).timeout(const Duration(seconds: 10));
