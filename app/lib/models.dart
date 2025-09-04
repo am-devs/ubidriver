@@ -9,12 +9,14 @@ class Customer {
   final int customerId;
   final String address;
   final String vat;
+  final (double, double)? coordinates;
 
   const Customer({
     required this.name,
     required this.customerId,
     required this.address,
-    required this.vat
+    required this.vat,
+    required this.coordinates
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
@@ -61,7 +63,7 @@ class InvoiceLine extends ProductLine {
 
 @JsonSerializable()
 class ReturnLine extends ProductLine {
-  final String reason;
+  final DevolutionType reason;
 
   ReturnLine({required this.reason, required super.product, required super.quantity});
   
@@ -80,6 +82,8 @@ class Invoice {
   final DateTime date;
   @JsonKey(name: 'invoice_id')
   final int id;
+  @JsonKey(name: 'order_id')
+  final int saleId;
   final String organization;
   final Customer customer;
   final List<InvoiceLine> _lines;
@@ -110,6 +114,7 @@ class Invoice {
     required this.id,
     required this.organization,
     required this.customer,
+    required this.saleId,
     List<InvoiceLine>? lines,
   }): _lines = lines ?? [];
 

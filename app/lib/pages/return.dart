@@ -5,9 +5,6 @@ import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// Debug only
-const List<String> selections = ["M-1", "M-2", "M-3"];
-
 class _ProductStep extends StatefulWidget {
   final double maxQuantity;
   final Function(String, double, String) onSave;
@@ -38,8 +35,9 @@ class _ProductStepState extends State<_ProductStep> {
               border: OutlineInputBorder()
             ),
             value: _selectedReason,
-            items: selections.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(value: value, child: Text(value));
+            isExpanded: true,
+            items: Provider.of<AppState>(context).devolutionTypes.values.map<DropdownMenuItem<String>>((DevolutionType value) {
+              return DropdownMenuItem<String>(value: value.id.toString(), child: Text(value.name));
             }).toList(),
             onChanged: (value) {
               setState(() {
@@ -103,12 +101,32 @@ class _ReturnPageState extends State<ReturnPage> {
   void initState() {
     super.initState();
 
-    _lines.addAll(Provider.of<AppState>(context, listen: false).getReturnLines());
+    final state = Provider.of<AppState>(context, listen: false);
+
+    _lines.addAll(state.getReturnLines());
     _stepKeys.addAll(List.generate(_lines.length, (index) => GlobalKey()));
+
+    if (state.devolutionTypes.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchDevolutionTypes();
+      });
+    }
   }
 
+  _fetchDevolutionTypes() async {
+    final api = Provider.of<ApiService>(context, listen: false);
+
+    final results = await api.get<List<dynamic>>("/devolution-types");
+
+    if (mounted) {
+      Provider.of<AppState>(context, listen: false).setDevolutionTypes(results);
+    }
+  }
+      
   @override
   Widget build(BuildContext context) {
+    final types = Provider.of<AppState>(context).devolutionTypes;
+
     return AppScaffold(
       children: [ 
         Stepper(
@@ -188,7 +206,7 @@ class _ReturnPageState extends State<ReturnPage> {
                 (reason, quantity, batchNumber) {
                   _returnData[_lines[index].product.id] = ReturnLine(
                     product: _lines[index].product,
-                    reason: reason,
+                    reason: types[int.parse(reason)]!,
                     quantity: quantity,
                   );
                 },

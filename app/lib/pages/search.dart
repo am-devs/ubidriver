@@ -58,6 +58,7 @@ class _SearchPageState extends State<SearchPage> {
     var results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
 
     setState(() {
+      _invoices.clear();
       _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
     });
 

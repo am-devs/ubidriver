@@ -31,11 +31,11 @@ def get_invoices(response: Response, pattern: str, token: str = Depends(oauth2_s
         }
 
 @app.post("/invoices/{id}/confirm")
-def invoices_id_confirm(id: int, response: Response, token: str = Depends(oauth2_scheme)):
+def invoices_id_confirm(id: int, data: models.InvoiceConfirm, response: Response, token: str = Depends(oauth2_scheme)):
     try:
         get_user_data(token)
 
-        result = models.Invoice.confirm_invoice(id)
+        result = models.Invoice.confirm_invoice(id, data)
 
         if result:
             response.status_code = status.HTTP_201_CREATED
@@ -82,7 +82,7 @@ def get_user(response: Response, token: str = Depends(oauth2_scheme)):
             "error": str(e)
         }
     
-@app.get("/devolutions")
+@app.get("/devolution-types")
 def get_user(response: Response):
     try:
         return models.DevolutionType.get_all()

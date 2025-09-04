@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, Tuple
 from pydantic import BaseModel
 from services import Database
 from passlib.context import CryptContext
@@ -44,11 +44,16 @@ WHERE ci.c_invoice_id = ANY(%s)""", ids)
 
         return data
 
+type Point = Tuple[float, float]
+
+_parse_point = lambda p: tuple(float(r) for r in p[1:-1].split(","))
+
 class Customer(BaseModel):
     customer_id: int
     name: str
     address: str
     vat: str
+    coordinates: Optional[Point] = None
 
     @staticmethod
     def get_by_locations(db: Database, locations: list[int]):
@@ -58,6 +63,7 @@ SELECT
     cb.value,
     cb.name,
     cl.address1,
+    point(cl.latitude, cl.longitude),
     cbl.c_bpartner_location_id
 FROM c_bpartner cb
 JOIN c_bpartner_location cbl ON cbl.c_bpartner_id = cb.c_bpartner_id AND cbl.c_bpartner_location_id = ANY(%s)
@@ -70,12 +76,16 @@ JOIN c_location cl ON cl.c_location_id = cbl.c_location_id""", locations)
                 customer_id=rec[0],
                 vat=rec[1],
                 name=rec[2],
-                address=rec[3]
+                address=rec[3],
+                coordinates=rec[4] and _parse_point(rec[4])
             )
             
-            data[rec[4]] = custom
+            data[rec[-1]] = custom
 
         return data
+
+class InvoiceConfirm(BaseModel):
+    coordinates: Point
 
 class Invoice(BaseModel):
     code: str
@@ -84,9 +94,10 @@ class Invoice(BaseModel):
     organization: str 
     customer: Optional[Customer] = None
     lines: list[InvoiceLine] = []
+    order_id: int
     
     @staticmethod
-    def confirm_invoice(invoice_id: int):
+    def confirm_invoice(invoice_id: int, invoice: InvoiceConfirm):
         ...
 
     @staticmethod
@@ -98,7 +109,8 @@ SELECT DISTINCT
 	ci.dateacct::date as date_invoice,
 	ci.c_invoice_id as invoice_id,
 	ado.name as organization,
-	ci.c_bpartner_location_id as customer_location
+	ci.c_bpartner_location_id as customer_location,
+    co.c_order_id as order_id
 FROM FTA_EntryTicket as et
 JOIN FTA_LoadOrder as lo ON et.FTA_Driver_ID = lo.FTA_Driver_ID AND lo.FTA_EntryTicket_ID = et.FTA_EntryTicket_ID
 JOIN FTA_LoadOrderLine as loline ON lo.FTA_LoadOrder_ID = loline.FTA_LoadOrder_ID 
@@ -123,6 +135,7 @@ WHERE ci.docstatus = 'CO'
                     date_invoice=rec[1],
                     invoice_id=rec[2],
                     organization=rec[3],
+                    order_id=rec[5]
                 )
 
                 locations[rec[2]] = rec[4]
@@ -159,4 +172,4 @@ class DevolutionType(BaseModel):
         with Database() as db:
             db.execute("SELECT name, M_RMAType_ID FROM M_RMAType")
 
-            return [DevolutionType(name=r[0], devolution_id=r[1]) for r in db.fetchall()]
+            return [DevolutionType(name=r[0], devolution_type_id=r[1]) for r in db.fetchall()]

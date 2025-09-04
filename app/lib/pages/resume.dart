@@ -1,10 +1,75 @@
+import 'dart:math';
+
 import 'package:driver_return/models.dart';
 import 'package:driver_return/components.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
+const int _SafeDistance = 3;
+
+double _calcularDistenciaHaversine((double, double) coord1, (double, double) coord2) {
+  final (lat1, lon1) = coord1;
+  final (lat2, lon2) = coord2;
+  
+  const double radioTierraKm = 6371.0;
+  
+  double gradosARadianes(double grados) => grados * pi / 180.0;
+  
+  final double lat1Rad = gradosARadianes(lat1);
+  final double lon1Rad = gradosARadianes(lon1);
+  final double lat2Rad = gradosARadianes(lat2);
+  final double lon2Rad = gradosARadianes(lon2);
+  
+  final double dLat = lat2Rad - lat1Rad;
+  final double dLon = lon2Rad - lon1Rad;
+  
+  final double a = sin(dLat / 2) * sin(dLat / 2) +
+      cos(lat1Rad) * cos(lat2Rad) * sin(dLon / 2) * sin(dLon / 2);
+  
+  final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  
+  return radioTierraKm * c;
+}
+
 class ResumePage extends StatelessWidget {
+  Future<Position> _getPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the 
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale 
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+    
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately. 
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.');
+    } 
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
   @override
   Widget build(BuildContext context) {
     Invoice? invoice = Provider.of<AppState>(context, listen: false).invoice;
@@ -44,6 +109,24 @@ class ResumePage extends StatelessWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
+        if (custom.coordinates != null)
+          FutureBuilder(
+            future: _getPosition(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final distance = _calcularDistenciaHaversine(
+                  (snapshot.data!.latitude, snapshot.data!.longitude),
+                  custom.coordinates!,
+                );
+
+                if (distance <= _SafeDistance) {
+                  return Text("Estás a punto de confirmar una factura sin estar cerca del destino");
+                }
+              }
+
+              return Container();
+            },
+          ),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 20),
           child: RichText(
@@ -83,7 +166,7 @@ class ResumePage extends StatelessWidget {
           ),
         ),
         AppButton(
-          onPressed: () {
+          onPressed: () async {
             final state = Provider.of<AppState>(context, listen: false);
             
             state.clearInvoice();
@@ -93,7 +176,9 @@ class ResumePage extends StatelessWidget {
               state.advanceState();
             }
 
-            Navigator.of(context).pushNamed("/ending");
+            if (context.mounted) {
+              Navigator.of(context).pushNamed("/ending");
+            }
           },
           label: "CONFIRMAR DESPACHO"
         )

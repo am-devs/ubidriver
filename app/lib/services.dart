@@ -65,6 +65,8 @@ class ApiService implements Memento {
     if(data is Map && data.containsKey("error")) {
       throw Exception(data);
     } else {
+      print("Data $data");
+
       return data;
     }
   }

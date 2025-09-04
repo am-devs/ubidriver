@@ -45,52 +45,55 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ListView.builder(
-          shrinkWrap: true,
-          padding: EdgeInsets.zero,
-          itemCount: widget.lines.length,
-          itemBuilder: (context, index) {
-            line = widget.lines[index];
+        SizedBox(
+          height: 300,
+          child: ListView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            itemCount: widget.lines.length,
+            itemBuilder: (context, index) {
+              line = widget.lines[index];
 
-            if (line is ReturnLine) {
-              return _ReturningLineCard(line: line as ReturnLine,);
+              if (line is ReturnLine) {
+                return _ReturningLineCard(line: line as ReturnLine,);
+              }
+      
+              isSelected = _selections.contains(index);
+
+              return Card(
+                elevation: 1,
+                color: isSelected ? Colors.red : Color.fromRGBO(255, 248, 248, 1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: Colors.red
+                  )
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  selected: isSelected,
+                  title: Text(
+                    line.product.name.toUpperCase(),
+                    style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.w400),
+                  ),
+                  enabled: widget.canSelect && line is InvoiceLine,
+                  trailing: Text(
+                    line.quantity.toString(),
+                    style: TextStyle(color: isSelected ? Colors.white : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      if (_selections.contains(index)) {
+                        _selections.remove(index);
+                      } else {
+                        _selections.add(index);
+                      }
+                    });
+                  },
+                ),
+              );
             }
-    
-            isSelected = _selections.contains(index);
-
-            return Card(
-              elevation: 1,
-              color: isSelected ? Colors.red : Color.fromRGBO(255, 248, 248, 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(
-                  color: Colors.red
-                )
-              ),
-              child: ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                selected: isSelected,
-                title: Text(
-                  line.product.name.toUpperCase(),
-                  style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.w400),
-                ),
-                enabled: widget.canSelect && line is InvoiceLine,
-                trailing: Text(
-                  line.quantity.toString(),
-                  style: TextStyle(color: isSelected ? Colors.white : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  setState(() {
-                    if (_selections.contains(index)) {
-                      _selections.remove(index);
-                    } else {
-                      _selections.add(index);
-                    }
-                  });
-                },
-              ),
-            );
-          }
+          )
         ),
         Padding(
           padding: EdgeInsets.only(bottom: 16, top: 8, right: 16),
