@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:driver_return/models.dart';
 import 'package:driver_return/components.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -166,18 +167,32 @@ class ResumePage extends StatelessWidget {
           ),
         ),
         AppButton(
-          onPressed: () async {
-            final state = Provider.of<AppState>(context, listen: false);
-            
-            state.clearInvoice();
-            state.advanceState();
+          onPressed: () async { 
+            final api = Provider.of<ApiService>(context, listen: false);
 
-            if (state.currentState == DeliveryState.approved) {
-              state.advanceState();
-            }
+            try {
+              await api.post("/invoices/${invoice.id}/confirm");
 
-            if (context.mounted) {
-              Navigator.of(context).pushNamed("/ending");
+              if (context.mounted) {
+                final state = Provider.of<AppState>(context, listen: false);
+                
+                state.clearInvoice();
+                state.advanceState();
+
+                if (state.currentState == DeliveryState.approved) {
+                  state.advanceState();
+                }
+
+                Navigator.of(context).pushNamed("/ending");
+              }
+            } catch(e) {
+              print(e);
+
+              if(context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Ocurrió un error: $e'),
+                ));
+              }
             }
           },
           label: "CONFIRMAR DESPACHO"

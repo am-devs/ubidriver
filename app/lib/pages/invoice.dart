@@ -233,7 +233,7 @@ class InvoicePage extends StatelessWidget {
                   _InvoiceLineTable(
                     lines,
                     invoice.totalQuantity,
-                    !invoice.needsApproval
+                    invoice.isApproved
                   )
               ],
             )

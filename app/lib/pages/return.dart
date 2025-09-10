@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 class _ProductStep extends StatefulWidget {
   final double maxQuantity;
-  final Function(String, double, String) onSave;
+  final Function(String, double) onSave;
   final Key? stepKey;  // Cambiado de 'key' a 'stepKey' para evitar conflicto
 
   const _ProductStep(this.maxQuantity, this.onSave, {this.stepKey}) : super(key: stepKey);
@@ -20,7 +20,6 @@ class _ProductStepState extends State<_ProductStep> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedReason;
   double? _quantity;
-  String _batchNumber = '';
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +80,7 @@ class _ProductStepState extends State<_ProductStep> {
       _formKey.currentState?.save();
 
       if (_selectedReason != null && _quantity != null) {
-        widget.onSave(_selectedReason!, _quantity!, _batchNumber);
+        widget.onSave(_selectedReason!, _quantity!);
 
         return true;
       }
@@ -99,7 +98,7 @@ class _ReturnPageState extends State<ReturnPage> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState(); 
 
     final state = Provider.of<AppState>(context, listen: false);
 
@@ -161,25 +160,55 @@ class _ReturnPageState extends State<ReturnPage> {
               Navigator.of(context).pop();
             }
           },
-          onStepContinue: () {
+          onStepContinue: () async {
             // Validar y guardar el formulario actual
             if (_stepKeys[_index].currentState?.saveForm() ?? false) {
               if (_index < _lines.length - 1) {
                 setState(() {
                   _index += 1;
                 });
-              } else {
-                final state = Provider.of<AppState>(context, listen: false);
-                
-                state.returnInvoice(_returnData);
 
-                if (state.invoice!.needsApproval) {
-                  state.setInvoiceApproval();
+                return;
+              } 
+
+              final api = Provider.of<ApiService>(context, listen: false);
+              final state = Provider.of<AppState>(context, listen: false);
+
+              try {
+                final json = await api.post<Map<String, dynamic>>(
+                  "/invoices/${state.invoice!.id}/return",
+                  body: {
+                    "lines": _returnData.values.map((line) => {
+                      "line_id": line.lineId,
+                      "devolution_type_id": line.reason.id,
+                      "quantity": line.quantity,
+                    }).toList()
+                  }
+                );
+
+                ReturnStatus status = ReturnStatus.fromJson(json);
+
+                state.returnInvoice(_returnData, status);
+
+                if (status.approvalStatus == "waiting") {
                   state.advanceState();
-                  AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
-                  Navigator.of(context).pushNamed("/approval");
+                  AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
+
+                  if (context.mounted) {
+                    Navigator.of(context).pushNamed("/approval");
+                  }
                 } else {
-                  Navigator.of(context).pop();
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }
+              } catch(e) {
+                print(e);
+
+                if(context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Ocurrió un error: $e'),
+                  ));
                 }
               }
             }
@@ -203,8 +232,9 @@ class _ReturnPageState extends State<ReturnPage> {
                 padding: EdgeInsets.only(top: 8),
                 child: _ProductStep(
                 line.quantity,
-                (reason, quantity, batchNumber) {
+                (reason, quantity) {
                   _returnData[_lines[index].product.id] = ReturnLine(
+                    lineId: _lines[index].lineId,
                     product: _lines[index].product,
                     reason: types[int.parse(reason)]!,
                     quantity: quantity,

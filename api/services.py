@@ -71,17 +71,64 @@ class OdooConnection:
             print("Exception occurred: ", info)
 
     def _login_odoo(self):
-        response = requests.post(ODOO_DATA("url"), json={
+        response = requests.post(ODOO_DATA["url"], json={
             "jsonrpc": "2.0",
             "id": 0,
             "method": "call",
             "params": {
                 "service": "common",
                 "method": "login",
-                "args": [ODOO_DATA("db"), ODOO_DATA("user"), ODOO_DATA("pass")]
+                "args": [ODOO_DATA["db"], ODOO_DATA["user"], ODOO_DATA["pass"]]
             }
         })
 
         result = response.json()
 
         return result["result"]
+    
+    def search_ids(self, models: str, domain: list):
+        response = requests.post(ODOO_DATA["url"], json={
+            "jsonrpc": "2.0",
+            "id": 0,
+            "method": "call",
+            "params": {
+                "service": "object",
+                "method": "execute",
+                "args": [
+                    ODOO_DATA["db"], self._uid, ODOO_DATA["pass"],
+                    models, 
+                    "search_read", domain, [], []
+                ]
+            }
+        })
+
+        response.raise_for_status()
+
+        data = response.json()["result"]
+
+        return tuple(r["id"] for r in data)
+
+    def execute(self, model: str, method: str, *arguments):
+        response = requests.post(ODOO_DATA["url"], json={
+            "jsonrpc": "2.0",
+            "id": 0,
+            "method": "call",
+            "params": {
+                "service": "object",
+                "method": "execute",
+                "args": [
+                    ODOO_DATA["db"], self._uid, ODOO_DATA["pass"],
+                    model, 
+                    method,
+                    *arguments
+                ]
+            }
+        })
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        print(data)
+
+        return data["result"]

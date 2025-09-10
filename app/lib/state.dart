@@ -16,19 +16,6 @@ enum DeliveryState {
   confirmed,
 }
 
-@JsonSerializable()
-class _InvoiceApproval {
-  bool approved;
-
-  _InvoiceApproval(this.approved);
-
-  factory _InvoiceApproval.fromJson(Map<String, dynamic> json) => _InvoiceApproval(json["approved"]);
-
-  Map<String, dynamic> toJson() => {
-    "approved": approved
-  };
-}
-
 abstract class Memento {
   void loadFromSnapshot(AppSnapshot snapshot);
   Map<String, dynamic> toJson();
@@ -85,11 +72,9 @@ class AppSnapshot {
 class AppState extends ChangeNotifier implements Memento {
   final List<InvoiceLine> _returnLines = [];
   Invoice? _invoice;
-  _InvoiceApproval? _approval;
   DeliveryState _status = DeliveryState.searchingInvoice;
   Map<int, DevolutionType> _devolutionTypes = {};
 
-  bool get isApproved => _approval == null || _approval?.approved == true;
   Invoice? get invoice => _invoice;
   DeliveryState get currentState => _status;
   Map<int, DevolutionType> get devolutionTypes => _devolutionTypes;
@@ -146,7 +131,6 @@ class AppState extends ChangeNotifier implements Memento {
 
       _invoice = snapshot.data["invoice"] != null ? Invoice.fromJson(snapshot.data["invoice"]) : null;
       _status = DeliveryState.values[snapshot.data["status"] ?? 0];
-      _approval = snapshot.data["approval"] != null ? _InvoiceApproval.fromJson(snapshot.data["approval"]) : null;
 
       print("Estado cargado exitosamente");
   }
@@ -166,6 +150,8 @@ class AppState extends ChangeNotifier implements Memento {
 
   void setInvoice(Invoice inv) {
     print("Setting invoice!");
+    print(inv.toJson());
+    print(inv.lines.map((l) => l.toJson()));
 
     _invoice = inv;
 
@@ -178,24 +164,19 @@ class AppState extends ChangeNotifier implements Memento {
     notifyListeners();
   }
 
-  void returnInvoice(Map<int, ReturnLine> lines) {
+  void approveInvoice(ReturnStatus status) {
+    _invoice!.returnStatus = status;
+
+    notifyListeners();
+  }
+
+  void returnInvoice(Map<int, ReturnLine> lines, ReturnStatus status) {
     _returnLines.clear();
 
     if (_invoice != null) {
+      _invoice!.returnStatus = status;
       _invoice!.returns = lines;
     }
-
-    notifyListeners();
-  }
-
-  void setInvoiceApproval() {
-    _approval = _InvoiceApproval(false);
-
-    notifyListeners();
-  }
-
-  void approveInvoice() {
-    _approval!.approved = true;
 
     notifyListeners();
   }
@@ -204,6 +185,5 @@ class AppState extends ChangeNotifier implements Memento {
   Map<String, dynamic> toJson() => {
     "invoice": _invoice?.toJson(),
     "status": _status.index,
-    "approval": _approval?.toJson()
   };
 }

@@ -48,24 +48,28 @@ Map<String, dynamic> _$ProductToJson(Product instance) => <String, dynamic>{
 };
 
 ProductLine _$ProductLineFromJson(Map<String, dynamic> json) => ProductLine(
+  lineId: (json['line_id'] as num).toInt(),
   product: Product.fromJson(json['product'] as Map<String, dynamic>),
   quantity: (json['quantity'] as num).toDouble(),
 );
 
 Map<String, dynamic> _$ProductLineToJson(ProductLine instance) =>
     <String, dynamic>{
+      'line_id': instance.lineId,
       'product': instance.product,
       'quantity': instance.quantity,
     };
 
 InvoiceLine _$InvoiceLineFromJson(Map<String, dynamic> json) => InvoiceLine(
   uom: json['uom'] as String,
+  lineId: (json['line_id'] as num).toInt(),
   product: Product.fromJson(json['product'] as Map<String, dynamic>),
   quantity: (json['quantity'] as num).toDouble(),
 );
 
 Map<String, dynamic> _$InvoiceLineToJson(InvoiceLine instance) =>
     <String, dynamic>{
+      'line_id': instance.lineId,
       'product': instance.product,
       'quantity': instance.quantity,
       'uom': instance.uom,
@@ -74,14 +78,27 @@ Map<String, dynamic> _$InvoiceLineToJson(InvoiceLine instance) =>
 ReturnLine _$ReturnLineFromJson(Map<String, dynamic> json) => ReturnLine(
   reason: DevolutionType.fromJson(json['reason'] as Map<String, dynamic>),
   product: Product.fromJson(json['product'] as Map<String, dynamic>),
+  lineId: (json['line_id'] as num).toInt(),
   quantity: (json['quantity'] as num).toDouble(),
 );
 
 Map<String, dynamic> _$ReturnLineToJson(ReturnLine instance) =>
     <String, dynamic>{
+      'line_id': instance.lineId,
       'product': instance.product,
       'quantity': instance.quantity,
       'reason': instance.reason,
+    };
+
+ReturnStatus _$ReturnStatusFromJson(Map<String, dynamic> json) => ReturnStatus(
+  id: (json['id'] as num).toInt(),
+  approvalStatus: json['approval_status'] as String,
+);
+
+Map<String, dynamic> _$ReturnStatusToJson(ReturnStatus instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'approval_status': instance.approvalStatus,
     };
 
 Invoice _$InvoiceFromJson(Map<String, dynamic> json) => Invoice(
@@ -91,6 +108,10 @@ Invoice _$InvoiceFromJson(Map<String, dynamic> json) => Invoice(
   organization: json['organization'] as String,
   customer: Customer.fromJson(json['customer'] as Map<String, dynamic>),
   saleId: (json['order_id'] as num).toInt(),
+  returnStatus:
+      json['returnStatus'] == null
+          ? null
+          : ReturnStatus.fromJson(json['returnStatus'] as Map<String, dynamic>),
   lines:
       (json['lines'] as List<dynamic>?)
           ?.map((e) => InvoiceLine.fromJson(e as Map<String, dynamic>))
@@ -104,6 +125,7 @@ Map<String, dynamic> _$InvoiceToJson(Invoice instance) => <String, dynamic>{
   'order_id': instance.saleId,
   'organization': instance.organization,
   'customer': instance.customer,
+  'returnStatus': instance.returnStatus,
   'lines': instance.lines,
 };
 

@@ -38,11 +38,17 @@ class Product {
 
 @JsonSerializable()
 class ProductLine {
+  @JsonKey(name: "line_id")
+  final int lineId;
   final Product product;
   final double quantity;
   int get id => product.id;
 
-  const ProductLine({required this.product, required this.quantity});
+  const ProductLine({
+    required this.lineId,
+    required this.product,
+    required this.quantity
+  });
 
   factory ProductLine.fromJson(Map<String, dynamic> json) => _$ProductLineFromJson(json);
 
@@ -53,7 +59,7 @@ class ProductLine {
 class InvoiceLine extends ProductLine {
   final String uom;
 
-  const InvoiceLine({required this.uom, required super.product, required super.quantity});
+  const InvoiceLine({required this.uom, required super.lineId, required super.product, required super.quantity});
 
   factory InvoiceLine.fromJson(Map<String, dynamic> json) => _$InvoiceLineFromJson(json);
 
@@ -65,7 +71,7 @@ class InvoiceLine extends ProductLine {
 class ReturnLine extends ProductLine {
   final DevolutionType reason;
 
-  ReturnLine({required this.reason, required super.product, required super.quantity});
+  ReturnLine({required this.reason, required super.product, required super.lineId, required super.quantity});
   
   factory ReturnLine.fromJson(Map<String, dynamic> json) => _$ReturnLineFromJson(json);
 
@@ -74,9 +80,20 @@ class ReturnLine extends ProductLine {
 }
 
 @JsonSerializable()
-class Invoice {
-  static const int _limitQuantity = 30;
+class ReturnStatus {
+  final int id;
+  @JsonKey(name: 'approval_status')
+  final String approvalStatus;
 
+  ReturnStatus({required this.id, required this.approvalStatus});
+
+  factory ReturnStatus.fromJson(Map<String, dynamic> json) => _$ReturnStatusFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ReturnStatusToJson(this);
+}
+
+@JsonSerializable()
+class Invoice {
   final String code;
   @JsonKey(name: 'date_invoice')
   final DateTime date;
@@ -89,6 +106,9 @@ class Invoice {
   final List<InvoiceLine> _lines;
   @JsonKey(includeFromJson: false)
   Map<int, ReturnLine> returns = {};
+  ReturnStatus? returnStatus;
+
+  bool get isApproved => returnStatus == null ? true : returnStatus!.approvalStatus == "approved";
 
   List<InvoiceLine> get lines => _lines;
 
@@ -104,10 +124,6 @@ class Invoice {
     return totalInvoice - totalReturn;
   }
 
-  bool get needsApproval => returns.isNotEmpty
-    ? returns.values.map((value) => value.quantity).reduce((value, element) => value + element) > _limitQuantity
-    : false;
-
   Invoice({
     required this.code,
     required this.date,
@@ -115,6 +131,7 @@ class Invoice {
     required this.organization,
     required this.customer,
     required this.saleId,
+    this.returnStatus,
     List<InvoiceLine>? lines,
   }): _lines = lines ?? [];
 

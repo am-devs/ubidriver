@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional, Tuple
 from pydantic import BaseModel
-from services import Database
+from services import Database, OdooConnection
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -11,6 +11,7 @@ class Product(BaseModel):
     name: str
 
 class InvoiceLine(BaseModel):
+    line_id: int
     product: Product
     quantity: float
     uom: str
@@ -35,6 +36,7 @@ WHERE ci.c_invoice_id = ANY(%s)""", ids)
 
         for rec in db.fetchall():
             line = InvoiceLine(
+                line_id=rec[0],
                 quantity=rec[1],
                 product=Product(id=rec[2], name=rec[3]),
                 uom=rec[4]
@@ -84,8 +86,75 @@ JOIN c_location cl ON cl.c_location_id = cbl.c_location_id""", locations)
 
         return data
 
-class InvoiceConfirm(BaseModel):
-    coordinates: Point
+class ReturnStatus(BaseModel):
+    id: int
+    approval_status: str
+
+    @staticmethod
+    def search_for_invoice_id(invoice_id: int):
+        order_id = 0
+
+        with Database() as db:
+            db.execute("""
+SELECT co.c_order_id::integer
+FROM C_Order co
+JOIN C_Invoice ci ON co.C_Order_ID = ci.C_Order_ID
+WHERE ci.c_invoice_id::integer = %s
+LIMIT 1""", invoice_id)
+            
+            result = db.fetchone()
+
+            if result:
+                order_id = result[0]
+
+        if not order_id:
+            return None
+
+        with OdooConnection() as conn:
+            data = conn.execute(
+                "ian.sale.return",
+                "action_search_by_adempiere_order",
+                order_id
+            )
+
+            return ReturnStatus(**data)
+
+class ReturnInvoiceLine(BaseModel):
+    line_id: int
+    quantity: float
+    devolution_type_id: int
+
+class ReturnInvoice(BaseModel):
+    lines: list[ReturnInvoiceLine]
+
+    def return_invoice(self, invoice_id: int):
+        order_id = 0
+
+        with Database() as db:
+            db.execute("""
+SELECT co.c_order_id::integer
+FROM C_Order co
+JOIN C_Invoice ci ON co.C_Order_ID = ci.C_Order_ID
+WHERE ci.c_invoice_id::integer = %s
+LIMIT 1""", invoice_id)
+            
+            result = db.fetchone()
+
+            if result:
+                order_id = result[0]
+
+        if not order_id:
+            raise Exception("No se encontró una venta por ese ID")
+
+        with OdooConnection() as conn:
+            result = conn.execute(
+                "ian.sale.return",
+                "action_create_from_adempiere_data",
+                order_id,
+                [l.model_dump() for l in self.lines]
+            )
+
+            return result
 
 class Invoice(BaseModel):
     code: str
@@ -95,10 +164,33 @@ class Invoice(BaseModel):
     customer: Optional[Customer] = None
     lines: list[InvoiceLine] = []
     order_id: int
+    return_status: Optional[ReturnStatus] = None
     
     @staticmethod
-    def confirm_invoice(invoice_id: int, invoice: InvoiceConfirm):
-        ...
+    def confirm_invoice(invoice_id: int):
+        order_ids = []
+
+        with Database() as db:
+            db.execute("""
+SELECT co.c_order_id::integer
+FROM C_Order co
+JOIN C_Invoice ci ON co.C_Order_ID = ci.C_Order_ID
+WHERE ci.c_invoice_id = %s""", invoice_id)
+            
+            order_ids.extend(r[0] for r in db.fetchall())
+
+        if not order_ids:
+            raise Exception("Order not found")
+
+        with OdooConnection() as conn:
+            ids = conn.search_ids("sale.order", [("record_identifer_id", "in", order_ids), ("is_direct_dispatch","=",True)])
+
+            if not ids:
+                raise Exception("La órden no existe")
+
+            conn.execute("sale.order", "action_confirm_delivery_by_driver", ids)
+
+            return True
 
     @staticmethod
     def get_by_driver_and_pattern(driver_id: int, pattern: str):
@@ -173,3 +265,10 @@ class DevolutionType(BaseModel):
             db.execute("SELECT name, M_RMAType_ID FROM M_RMAType")
 
             return [DevolutionType(name=r[0], devolution_type_id=r[1]) for r in db.fetchall()]
+        
+    @staticmethod
+    def to_export():
+        with Database() as db:
+            db.execute("SELECT name, M_RMAType_ID FROM M_RMAType")
+
+            return [{"name": r[0], "record_identifer_id": r[1]} for r in db.fetchall()]
