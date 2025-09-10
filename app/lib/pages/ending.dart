@@ -67,7 +67,7 @@ class EndingPage extends StatelessWidget {
           child: ElevatedButton.icon(
             style: appButtonStyle,
             onPressed: () {
-              Provider.of<AppState>(context, listen: false).advanceState();
+              Provider.of<AppState>(context, listen: false).resetState();
 
               Navigator.of(context).pushNamed("/search");
             },

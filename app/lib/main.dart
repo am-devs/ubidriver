@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
           return snap;
         }
 
-        return false;
+        return null;
       }),
       builder: (context, snapshot) {
         DeliveryState? status;

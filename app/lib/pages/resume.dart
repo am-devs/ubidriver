@@ -218,6 +218,7 @@ class ResumePage extends StatelessWidget {
 
               state.advanceState();
               state.clearInvoice();
+              AppSnapshot.clear();
 
               if (context.mounted) {
                 Navigator.of(context).pushNamed("/ending");

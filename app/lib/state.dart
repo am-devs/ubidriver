@@ -65,7 +65,9 @@ class AppSnapshot {
   static Future<File> clear() async {
     final file = await _localFile;
 
-    return file.create();
+    print("Borrando archivo!");
+
+    return file.writeAsString("");
   }
 
   static Future<AppSnapshot?> tryToLoad() async {
