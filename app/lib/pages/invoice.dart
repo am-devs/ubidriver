@@ -134,6 +134,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
                     }
                   }
                 } else {
+                  state.advanceState();
                   Navigator.of(context).pushNamed("/resume");
                 }
               },

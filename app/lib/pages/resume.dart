@@ -169,9 +169,6 @@ class ResumePage extends StatelessWidget {
         AppButton(
           onPressed: () async { 
             final state = Provider.of<AppState>(context, listen: false);
-
-            state.advanceState();
-
             final api = Provider.of<ApiService>(context, listen: false);
 
             if (state.invoice!.returns.isNotEmpty && state.invoice!.returnStatus == null) {
@@ -216,7 +213,14 @@ class ResumePage extends StatelessWidget {
             try {
               await api.post("/invoices/${invoice.id}/confirm");
 
-              state.advanceState();
+              if (state.currentState != DeliveryState.approved) {
+                state.advanceState();
+              }
+
+              if (state.currentState != DeliveryState.confirmed) {
+                state.advanceState();
+              }
+
               state.clearInvoice();
               AppSnapshot.clear();
 

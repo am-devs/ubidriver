@@ -75,7 +75,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
           child: AppInvoiceCard(
             invoice: state.invoice!,
             onTap: () {
-              Navigator.of(context).pushNamed("/invoice");
+              Navigator.of(context).pushNamed("/resume");
             },
           ),
         )
