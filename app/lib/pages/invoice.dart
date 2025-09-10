@@ -108,15 +108,34 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
           spacing: 16,
           children: [
             AppButton(
-              label: "CONFIRMAR",
-              onPressed: () {
+              label: "LISTO",
+              onPressed: () async {
                 final state = Provider.of<AppState>(context, listen: false);
 
-                state.advanceState();
+                if (state.currentState == DeliveryState.approved) {
+                  try {
+                    await Provider.of<ApiService>(context, listen: false).post("/invoices/${state.invoice!.id}/confirm");
 
-                AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
+                    state.clearInvoice();
+                    state.advanceState();
 
-                Navigator.of(context).pushNamed("/resume");
+                    AppSnapshot.clear();
+
+                    if (context.mounted) {
+                      Navigator.of(context).pushNamed("/ending");
+                    }
+                  } catch(e) {
+                    print(e);
+
+                    if(context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Ocurrió un error: $e'),
+                      ));
+                    }
+                  }
+                } else {
+                  Navigator.of(context).pushNamed("/resume");
+                }
               },
             ),
             if (widget.canSelect)
@@ -156,7 +175,18 @@ class InvoicePage extends StatelessWidget {
     Widget build(BuildContext context) {
       final state = Provider.of<AppState>(context);
 
-      Invoice invoice = state.invoice!;
+      Invoice? invoice = state.invoice;
+
+      if (invoice == null) {
+        return AppScaffold(
+          children: [
+            Center(
+              child: CircularProgressIndicator(),
+            )
+          ]
+        );
+      }
+
       final custom = invoice.customer;
       List<ProductLine> lines = [...invoice.lines, ...invoice.returns.values];
 

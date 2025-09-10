@@ -70,7 +70,7 @@ InvoiceLine _$InvoiceLineFromJson(Map<String, dynamic> json) => InvoiceLine(
 Map<String, dynamic> _$InvoiceLineToJson(InvoiceLine instance) =>
     <String, dynamic>{
       'line_id': instance.lineId,
-      'product': instance.product,
+      'product': instance.product.toJson(),
       'quantity': instance.quantity,
       'uom': instance.uom,
     };
@@ -124,9 +124,9 @@ Map<String, dynamic> _$InvoiceToJson(Invoice instance) => <String, dynamic>{
   'invoice_id': instance.id,
   'order_id': instance.saleId,
   'organization': instance.organization,
-  'customer': instance.customer,
-  'returnStatus': instance.returnStatus,
-  'lines': instance.lines,
+  'customer': instance.customer.toJson(),
+  'returnStatus': instance.returnStatus?.toJson(),
+  'lines': instance.lines.map((e) => e.toJson()).toList(),
 };
 
 DevolutionType _$DevolutionTypeFromJson(Map<String, dynamic> json) =>

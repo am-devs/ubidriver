@@ -117,7 +117,6 @@ class _LoginFormState extends State<_LoginForm> {
 
                     _formGlobalKey.currentState!.save();
 
-
                     try {
                       setState(() {
                         _loading = true;
@@ -130,7 +129,6 @@ class _LoginFormState extends State<_LoginForm> {
 
                       if (context.mounted) {
                         if (result) {
-                          AppSnapshot.fromMemento(api).saveSnapshot();
                           Navigator.pushNamed(context, '/search');
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -114,7 +114,7 @@ LIMIT 1""", invoice_id)
             data = conn.execute(
                 "ian.sale.return",
                 "action_search_by_adempiere_order",
-                order_id
+                [order_id]
             )
 
             return ReturnStatus(**data)

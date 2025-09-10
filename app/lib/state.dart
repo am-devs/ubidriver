@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:driver_return/models.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:path_provider/path_provider.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -46,10 +45,27 @@ class AppSnapshot {
       return this;
   }
 
-  Future<File> saveSnapshot() async {
+  Future<File?> saveSnapshot() async {
+    try {
+
+      print(data);
+
+      final file = await _localFile;
+
+      print("Guardando archivo...");
+
+      return file.writeAsString(jsonEncode(data));
+    } catch(e) {
+      print(e);
+
+      return null;
+    }
+  }
+
+  static Future<File> clear() async {
     final file = await _localFile;
 
-    return file.writeAsString(jsonEncode(data));
+    return file.create();
   }
 
   static Future<AppSnapshot?> tryToLoad() async {
@@ -59,6 +75,9 @@ class AppSnapshot {
       // Read the file
       final contents = await file.readAsString();
       final data =  jsonDecode(contents);
+
+      print("Archivo cargado!");
+      print(data);
 
       return AppSnapshot(data);
     } catch (e) {
@@ -164,17 +183,16 @@ class AppState extends ChangeNotifier implements Memento {
     notifyListeners();
   }
 
-  void approveInvoice(ReturnStatus status) {
+  void setReturnStatus(ReturnStatus status) {
     _invoice!.returnStatus = status;
 
     notifyListeners();
   }
 
-  void returnInvoice(Map<int, ReturnLine> lines, ReturnStatus status) {
+  void returnInvoice(Map<int, ReturnLine> lines) {
     _returnLines.clear();
 
     if (_invoice != null) {
-      _invoice!.returnStatus = status;
       _invoice!.returns = lines;
     }
 

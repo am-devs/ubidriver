@@ -160,7 +160,7 @@ class _ReturnPageState extends State<ReturnPage> {
               Navigator.of(context).pop();
             }
           },
-          onStepContinue: () async {
+          onStepContinue: () {
             // Validar y guardar el formulario actual
             if (_stepKeys[_index].currentState?.saveForm() ?? false) {
               if (_index < _lines.length - 1) {
@@ -170,48 +170,13 @@ class _ReturnPageState extends State<ReturnPage> {
 
                 return;
               } 
-
-              final api = Provider.of<ApiService>(context, listen: false);
-              final state = Provider.of<AppState>(context, listen: false);
-
-              try {
-                final json = await api.post<Map<String, dynamic>>(
-                  "/invoices/${state.invoice!.id}/return",
-                  body: {
-                    "lines": _returnData.values.map((line) => {
-                      "line_id": line.lineId,
-                      "devolution_type_id": line.reason.id,
-                      "quantity": line.quantity,
-                    }).toList()
-                  }
-                );
-
-                ReturnStatus status = ReturnStatus.fromJson(json);
-
-                state.returnInvoice(_returnData, status);
-
-                if (status.approvalStatus == "waiting") {
-                  state.advanceState();
-                  AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
-
-                  if (context.mounted) {
-                    Navigator.of(context).pushNamed("/approval");
-                  }
-                } else {
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }
-              } catch(e) {
-                print(e);
-
-                if(context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Ocurrió un error: $e'),
-                  ));
-                }
-              }
             }
+
+            final state = Provider.of<AppState>(context, listen: false);
+
+            state.returnInvoice(_returnData);
+          
+            Navigator.of(context).pop();
           },
           onStepTapped: (int index) {
             setState(() {

@@ -55,7 +55,7 @@ class ProductLine {
   Map<String, dynamic> toJson() => _$ProductLineToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class InvoiceLine extends ProductLine {
   final String uom;
 
@@ -92,7 +92,7 @@ class ReturnStatus {
   Map<String, dynamic> toJson() => _$ReturnStatusToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class Invoice {
   final String code;
   @JsonKey(name: 'date_invoice')

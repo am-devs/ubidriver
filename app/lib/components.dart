@@ -155,8 +155,6 @@ class AppBackButton extends StatelessWidget {
 
         state.revertState();
 
-        AppSnapshot.fromMemento(state).withData(Provider.of<ApiService>(context, listen: false)).saveSnapshot();
-
         final nav = Navigator.of(context);
         
         if (nav.canPop()) {

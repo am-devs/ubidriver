@@ -12,6 +12,8 @@ class ApprovalPage extends StatefulWidget {
   State<StatefulWidget> createState() => _ApprovalPageState();
 }
 
+const int _pollingTime = 10;
+
 class _ApprovalPageState extends State<ApprovalPage> {
   Timer? _pollingTimer;
 
@@ -19,17 +21,19 @@ class _ApprovalPageState extends State<ApprovalPage> {
   void initState() {
     super.initState();
  
-    _pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+    _pollingTimer = Timer.periodic(Duration(seconds: _pollingTime), (timer) async {
         try {
           final state = Provider.of<AppState>(context, listen: false);
           final api = Provider.of<ApiService>(context, listen: false);
 
-          final response = await api.get<Map<String, dynamic>>('/invoice/${state.invoice!.id}/return');
+          final response = await api.get<Map<String, dynamic>>('/invoices/${state.invoice!.id}/return');
 
           final status = ReturnStatus.fromJson(response);
-          
+
           if (status.approvalStatus != "waiting") {
-            state.approveInvoice(status);
+            state.setReturnStatus(status);
+            state.advanceState();
+            AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
             timer.cancel();
           }
         } catch (error) {
@@ -48,6 +52,14 @@ class _ApprovalPageState extends State<ApprovalPage> {
   @override
   Widget build(BuildContext context) {
     var state = Provider.of<AppState>(context);
+
+    if (state.invoice == null) {
+      return AppScaffold(
+        children: [
+          Center(child: CircularProgressIndicator(),)
+        ]
+      );
+    }
 
     return AppScaffold(
       children: [

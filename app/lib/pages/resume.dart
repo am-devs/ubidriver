@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
-const int _SafeDistance = 3;
+const int _safeDistance = 3;
 
 double _calcularDistenciaHaversine((double, double) coord1, (double, double) coord2) {
   final (lat1, lon1) = coord1;
@@ -120,7 +120,7 @@ class ResumePage extends StatelessWidget {
                   custom.coordinates!,
                 );
 
-                if (distance <= _SafeDistance) {
+                if (distance <= _safeDistance) {
                   return Text("Estás a punto de confirmar una factura sin estar cerca del destino");
                 }
               }
@@ -168,21 +168,58 @@ class ResumePage extends StatelessWidget {
         ),
         AppButton(
           onPressed: () async { 
+            final state = Provider.of<AppState>(context, listen: false);
+
+            state.advanceState();
+
             final api = Provider.of<ApiService>(context, listen: false);
 
+            if (state.invoice!.returns.isNotEmpty && state.invoice!.returnStatus == null) {
+              try {
+                final json = await api.post<Map<String, dynamic>>(
+                  "/invoices/${state.invoice!.id}/return",
+                  body: {
+                    "lines": state.invoice!.returns.values.map((line) => {
+                      "line_id": line.lineId,
+                      "devolution_type_id": line.reason.id,
+                      "quantity": line.quantity,
+                    }).toList()
+                  }
+                );
+
+                ReturnStatus status = ReturnStatus.fromJson(json);
+
+                state.setReturnStatus(status);
+
+                // Falta aprobacion
+                if (context.mounted) {
+                  if (status.approvalStatus == "waiting") {
+                    AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
+                    Navigator.of(context).pushNamed("/approval");
+                    return;
+                  } else {
+                    state.advanceState();
+                  }
+                }
+              } catch(e) {
+                print(e);
+
+                if(context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Ocurrió un error: $e'),
+                  ));
+                }
+              }
+            }
+            
+            // Finalize everything
             try {
               await api.post("/invoices/${invoice.id}/confirm");
 
+              state.advanceState();
+              state.clearInvoice();
+
               if (context.mounted) {
-                final state = Provider.of<AppState>(context, listen: false);
-                
-                state.clearInvoice();
-                state.advanceState();
-
-                if (state.currentState == DeliveryState.approved) {
-                  state.advanceState();
-                }
-
                 Navigator.of(context).pushNamed("/ending");
               }
             } catch(e) {

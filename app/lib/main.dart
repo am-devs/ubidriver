@@ -27,9 +27,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: AppSnapshot.tryToLoad().then(<Snapshot>(snap) async {
-        if (context.mounted && snap != null) {
-          final api = Provider.of<ApiService>(context);
-          
+        if (snap != null) {
+          final api = Provider.of<ApiService>(context, listen: false);
+
           api.loadFromSnapshot(snap);
 
           await api.validateToken();
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
       builder: (context, snapshot) {
         DeliveryState? status;
 
-        if (snapshot.hasData && snapshot.data) {
+        if (snapshot.hasData && snapshot.data != null) {
           final state = Provider.of<AppState>(context, listen: false);
 
           state.loadFromSnapshot(snapshot.data!);
