@@ -179,6 +179,11 @@ WHERE ci.c_invoice_id = %s""", invoice_id)
             
             order_ids.extend(r[0] for r in db.fetchall())
 
+            db.execute("""
+UPDATE C_Invoice 
+SET is_confirm = true
+WHERE c_invoice_id = %s""", invoice_id)
+
         if not order_ids:
             raise Exception("Order not found")
 
@@ -190,7 +195,7 @@ WHERE ci.c_invoice_id = %s""", invoice_id)
 
             conn.execute("sale.order", "action_confirm_delivery_by_driver", ids)
 
-            return True
+        return True
 
     @staticmethod
     def get_by_driver_and_pattern(driver_id: int, pattern: str):
@@ -216,7 +221,8 @@ WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
     AND ci.C_Order_ID IS NOT NULL
     AND et.FTA_Driver_ID = %s
-    AND ci.documentno ILIKE %s""", driver_id, f"%{pattern}%")
+    AND ci.documentno ILIKE %s
+    AND ci.is_confirm = false""", driver_id, f"%{pattern}%")
             
             invoices = {}
             locations = {}

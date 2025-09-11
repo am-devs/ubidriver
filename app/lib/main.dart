@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
 
           if (Provider.of<ApiService>(context).isLoggedIn) {
             if (state.currentState == DeliveryState.confirmed) {
-              state.advanceState();
+              state.resetState();
             }
 
             status = state.currentState;

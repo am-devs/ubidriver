@@ -73,7 +73,9 @@ class ResumePage extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    Invoice? invoice = Provider.of<AppState>(context, listen: false).invoice;
+    final state = Provider.of<AppState>(context, listen: false);
+    
+    final Invoice? invoice = state.invoice;
 
     if (invoice == null) {
       return Column(
@@ -83,7 +85,8 @@ class ResumePage extends StatelessWidget {
       );
     }
 
-    Customer custom = invoice.customer;
+    final Customer custom = invoice.customer;
+    final isApproved = state.currentState == DeliveryState.approved;
 
     const boldStyle = TextStyle(fontWeight: FontWeight.bold, color: Colors.black);
     final defaultStyle = TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w400);
@@ -91,10 +94,11 @@ class ResumePage extends StatelessWidget {
 
     return AppScaffold(
       children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: AppBackButton(),
-        ),
+        if (!isApproved)
+          Align(
+            alignment: Alignment.topLeft,
+            child: AppBackButton(),
+          ),
         Center(
           child: const Icon(
             Icons.check_circle_rounded,
@@ -102,14 +106,15 @@ class ResumePage extends StatelessWidget {
             color: Colors.green,
           ),
         ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: const Text(
-            "VERIFIQUE SI LOS DATOS SON LOS CORRECTOS",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        if (!isApproved)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: const Text(
+              "VERIFIQUE SI LOS DATOS SON LOS CORRECTOS",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
         if (custom.coordinates != null)
           FutureBuilder(
             future: _getPosition(),
@@ -166,80 +171,97 @@ class ResumePage extends StatelessWidget {
             )
           ),
         ),
-        AppButton(
-          onPressed: () async { 
-            final state = Provider.of<AppState>(context, listen: false);
-            final api = Provider.of<ApiService>(context, listen: false);
-
-            if (state.invoice!.returns.isNotEmpty && state.invoice!.returnStatus == null) {
-              try {
-                final json = await api.post<Map<String, dynamic>>(
-                  "/invoices/${state.invoice!.id}/return",
-                  body: {
-                    "lines": state.invoice!.returns.values.map((line) => {
-                      "line_id": line.lineId,
-                      "devolution_type_id": line.reason.id,
-                      "quantity": line.quantity,
-                    }).toList()
-                  }
-                );
-
-                ReturnStatus status = ReturnStatus.fromJson(json);
-
-                state.setReturnStatus(status);
-
-                // Falta aprobacion
-                if (context.mounted) {
-                  if (status.approvalStatus == "waiting") {
-                    AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
-                    Navigator.of(context).pushNamed("/approval");
-                    return;
-                  } else {
-                    state.advanceState();
-                  }
-                }
-              } catch(e) {
-                print(e);
-
-                if(context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Ocurrió un error: $e'),
-                  ));
-                }
-              }
-            }
-            
-            // Finalize everything
-            try {
-              await api.post("/invoices/${invoice.id}/confirm");
-
-              if (state.currentState != DeliveryState.approved) {
-                state.advanceState();
-              }
-
-              if (state.currentState != DeliveryState.confirmed) {
-                state.advanceState();
-              }
-
-              state.clearInvoice();
-              AppSnapshot.clear();
-
-              if (context.mounted) {
-                Navigator.of(context).pushNamed("/ending");
-              }
-            } catch(e) {
-              print(e);
-
-              if(context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Ocurrió un error: $e'),
-                ));
-              }
-            }
-          },
-          label: "CONFIRMAR DESPACHO"
-        )
+        _AppConfirmButton(),
       ],
     );
   }
+}
+
+class _AppConfirmButton extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _AppConfirmButtonState();
+}
+
+class _AppConfirmButtonState extends State<_AppConfirmButton> {
+  bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = Provider.of<AppState>(context);
+
+    return AppButton(
+      onPressed: _loading ? null : () async {
+        final api = Provider.of<ApiService>(context, listen: false);
+
+        setState(() {
+          _loading = true;
+        });
+
+        if (state.invoice!.returns.isNotEmpty && state.invoice!.returnStatus == null) {
+          try {
+            final json = await api.post<Map<String, dynamic>>(
+              "/invoices/${state.invoice!.id}/return",
+              body: {
+                "lines": state.invoice!.returns.values.map((line) => {
+                  "line_id": line.lineId,
+                  "devolution_type_id": line.reason.id,
+                  "quantity": line.quantity,
+                }).toList()
+              }
+            );
+
+            ReturnStatus status = ReturnStatus.fromJson(json);
+
+            state.setReturnStatus(status);
+
+            // Falta aprobacion
+            if (context.mounted) {
+              if (status.approvalStatus == "waiting") {
+                AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
+                Navigator.of(context).pushNamed("/approval");
+                return;
+              } else {
+                state.advanceState();
+              }
+            }
+          } catch(e) {
+            print(e);
+
+            if(context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Ocurrió un error: $e'),
+              ));
+            }
+          }
+        }
+        
+        // Finalize everything
+        try {
+          await api.post("/invoices/${state.invoice!.id}/confirm");
+
+          state.advanceState();
+          state.clearInvoice();
+          AppSnapshot.clear();
+
+          if (context.mounted) {
+            Navigator.of(context).pushNamed("/ending");
+          }
+        } catch(e) {
+          print(e);
+
+          if(context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Ocurrió un error: $e'),
+            ));
+          }
+        }
+
+        setState(() {
+          _loading = false;
+        });
+      },
+      label: state.currentState == DeliveryState.approved ? "FINALIZAR" : "CONFIRMAR DESPACHO"
+    );
+  }
+
 }

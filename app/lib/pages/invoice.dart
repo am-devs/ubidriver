@@ -31,7 +31,6 @@ class _ReturningLineCard extends StatelessWidget {
       )
     );
   }
-
 }
 
 class _InvoiceLineTableState extends State<_InvoiceLineTable> {
@@ -98,7 +97,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
         Padding(
           padding: EdgeInsets.only(bottom: 16, top: 8, right: 16),
           child: Text(
-            widget.total.toString(),
+            ((widget.total * 100).truncateToDouble() / 100).toString(),
             textAlign: TextAlign.end,
             style: TextStyle(color: Colors.red, fontSize: 20, fontWeight: FontWeight.bold),
           ),
@@ -109,34 +108,9 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
           children: [
             AppButton(
               label: "LISTO",
-              onPressed: () async {
-                final state = Provider.of<AppState>(context, listen: false);
-
-                if (state.currentState == DeliveryState.approved) {
-                  try {
-                    await Provider.of<ApiService>(context, listen: false).post("/invoices/${state.invoice!.id}/confirm");
-
-                    state.clearInvoice();
-                    state.advanceState();
-
-                    AppSnapshot.clear();
-
-                    if (context.mounted) {
-                      Navigator.of(context).pushNamed("/ending");
-                    }
-                  } catch(e) {
-                    print(e);
-
-                    if(context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Ocurrió un error: $e'),
-                      ));
-                    }
-                  }
-                } else {
-                  state.advanceState();
-                  Navigator.of(context).pushNamed("/resume");
-                }
+              onPressed: () {
+                Provider.of<AppState>(context, listen: false).advanceState();
+                Navigator.of(context).pushNamed("/resume");
               },
             ),
             if (widget.canSelect)
@@ -264,7 +238,7 @@ class InvoicePage extends StatelessWidget {
                   _InvoiceLineTable(
                     lines,
                     invoice.totalQuantity,
-                    invoice.isApproved
+                    invoice.isApproved && state.currentState != DeliveryState.approved
                   )
               ],
             )

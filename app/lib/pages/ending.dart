@@ -23,18 +23,17 @@ class _GifSpeedControlScreenState extends State<_GifSpeedControlScreen> with Tic
   Widget build(BuildContext context) {
     return ClipOval(
       child: Gif(
-        image: AssetImage('assets/ending.gif'),
+        image: const AssetImage('assets/ending.gif'),
         controller: _gifController,
         height: 300,
         width: 300,
         autostart: Autostart.loop,
         fps: 7,
-        placeholder: (context) => const Text('Loading...'),
+        placeholder: (context) => const Text('Cargando...'),
       ),
     );
   }
 }
-
 
 class EndingPage extends StatelessWidget {
   @override

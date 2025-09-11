@@ -16,11 +16,12 @@ const int _pollingTime = 10;
 
 class _ApprovalPageState extends State<ApprovalPage> {
   Timer? _pollingTimer;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
- 
+
     _pollingTimer = Timer.periodic(Duration(seconds: _pollingTime), (timer) async {
         try {
           final state = Provider.of<AppState>(context, listen: false);
@@ -74,8 +75,37 @@ class _ApprovalPageState extends State<ApprovalPage> {
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: AppInvoiceCard(
             invoice: state.invoice!,
-            onTap: () {
-              Navigator.of(context).pushNamed("/resume");
+            onTap: _isLoading ? null : () async {
+              // Finalize everything
+              try {
+                setState(() {
+                  _isLoading = true;
+                });
+
+                final api = Provider.of<ApiService>(context, listen: false);
+
+                await api.post("/invoices/${state.invoice!.id}/confirm");
+
+                state.advanceState();
+                state.clearInvoice();
+                AppSnapshot.clear();
+
+                if (context.mounted) {
+                  Navigator.of(context).pushNamed("/ending");
+                }
+              } catch(e) {
+                print(e);
+
+                if(context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Ocurrió un error: $e'),
+                  ));
+                }
+              } finally {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
             },
           ),
         )

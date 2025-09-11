@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:driver_return/state.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_annotation/json_annotation.dart';
 
 class ApiService implements Memento {
   static final _baseUrl = Uri.parse("http://192.168.1.189:8084/v1");
@@ -61,7 +60,7 @@ class ApiService implements Memento {
       headers: {"Authorization": "Bearer $_token"}
     ).timeout(const Duration(seconds: 10));
 
-    var data = jsonDecode(response.body);
+    var data = jsonDecode(utf8.decode(response.bodyBytes));
 
     if(data is Map && data.containsKey("error")) {
       throw Exception(data);

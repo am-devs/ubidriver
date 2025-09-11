@@ -29,25 +29,40 @@ class _SearchPageState extends State<SearchPage> {
             onSubmitted: _onSubmitted,
           ),
         ),
-        Expanded(
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            shrinkWrap: true,
-            itemCount: _invoices.length,
-            itemBuilder: (context, index) => AppInvoiceCard(
-              invoice: _invoices[index],
-              onTap: () {
-                final state = Provider.of<AppState>(context, listen: false);
+        if (_invoices.isNotEmpty)
+          Expanded(
+            child: ListView.separated(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              shrinkWrap: true,
+              itemCount: _invoices.length,
+              itemBuilder: (context, index) => AppInvoiceCard(
+                invoice: _invoices[index],
+                onTap: () {
+                  final state = Provider.of<AppState>(context, listen: false);
 
-                state.setInvoice(_invoices[index]);
+                  state.setInvoice(_invoices[index]);
 
-                state.advanceState();
+                  state.advanceState();
 
-                Navigator.of(context).pushNamed("/invoice");
-              },
-            ), 
-            separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 4,),
+                  Navigator.of(context).pushNamed("/invoice");
+                },
+              ), 
+              separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 4,),
+            )
           )
+        else
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.search, size: 128, color: Colors.grey,),
+                const Text("No hay nada que mostrar", style: TextStyle(color: Colors.grey, fontSize: 24),)
+              ],
+            ),
+          ),
+        SizedBox(
+          height: 48,
+          child: Center(child: Text(_invoices.isEmpty ? "Facturas encontradas: ${_invoices.length}" : "..."),),
         )
       ]
     );
@@ -56,11 +71,16 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _onSubmitted(String value) async {
     var results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
 
-    setState(() {
-      _invoices.clear();
-      _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
-    });
-
-    _searchController.clear();
+    if (mounted && results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("No se encontró ninguna factura por el patrón: '$value'"),
+        ));
+    } else {
+      setState(() {
+        _invoices.clear();
+        _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
+        _searchController.clear();
+      });
+    }
   }
 }
