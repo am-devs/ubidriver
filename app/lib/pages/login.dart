@@ -1,4 +1,5 @@
 import 'package:driver_return/services.dart';
+import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -128,6 +129,7 @@ class _LoginFormState extends State<_LoginForm> {
 
                       if (context.mounted) {
                         if (result) {
+                          AppSnapshot.fromMemento(api).saveSnapshot();
                           Navigator.pushNamed(context, '/search');
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

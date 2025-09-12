@@ -11,13 +11,7 @@ Customer _$CustomerFromJson(Map<String, dynamic> json) => Customer(
   customerId: (json['customer_id'] as num).toInt(),
   address: json['address'] as String,
   vat: json['vat'] as String,
-  coordinates: _$recordConvertNullable(
-    json['coordinates'],
-    ($jsonValue) => (
-      ($jsonValue[r'$1'] as num).toDouble(),
-      ($jsonValue[r'$2'] as num).toDouble(),
-    ),
-  ),
+  coordinates: _recordFromJson(json['coordinates'] as List?),
 );
 
 Map<String, dynamic> _$CustomerToJson(Customer instance) => <String, dynamic>{
@@ -25,19 +19,9 @@ Map<String, dynamic> _$CustomerToJson(Customer instance) => <String, dynamic>{
   'customer_id': instance.customerId,
   'address': instance.address,
   'vat': instance.vat,
-  'coordinates':
-      instance.coordinates == null
-          ? null
-          : <String, dynamic>{
-            r'$1': instance.coordinates!.$1,
-            r'$2': instance.coordinates!.$2,
-          },
+  if (_recordToJson(instance.coordinates) case final value?)
+    'coordinates': value,
 };
-
-$Rec? _$recordConvertNullable<$Rec>(
-  Object? value,
-  $Rec Function(Map) convert,
-) => value == null ? null : convert(value as Map<String, dynamic>);
 
 Product _$ProductFromJson(Map<String, dynamic> json) =>
     Product(id: (json['id'] as num).toInt(), name: json['name'] as String);

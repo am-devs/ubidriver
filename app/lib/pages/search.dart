@@ -60,27 +60,36 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-        SizedBox(
-          height: 48,
-          child: Center(child: Text(_invoices.isEmpty ? "Facturas encontradas: ${_invoices.length}" : "..."),),
-        )
+        if (_invoices.isNotEmpty)
+          SizedBox(
+            height: 48,
+            child: Center(child: Text("Facturas encontradas: ${_invoices.length}"),),
+          )
       ]
     );
   }
 
   Future<void> _onSubmitted(String value) async {
-    var results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
+    // try {
+      final results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
 
-    if (mounted && results.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("No se encontró ninguna factura por el patrón: '$value'"),
-        ));
-    } else {
-      setState(() {
-        _invoices.clear();
-        _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
-        _searchController.clear();
-      });
-    }
+      if (mounted && results.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("No se encontró ninguna factura por el patrón: '$value'"),
+          ));
+      } else {
+        setState(() {
+          _invoices.clear();
+          _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
+          _searchController.clear();
+        });
+      }
+    // } catch (e) {
+    //   if (mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //       content: Text('Ocurrió un error: $e'),
+    //     ));
+    //   }
+    // }
   }
 }

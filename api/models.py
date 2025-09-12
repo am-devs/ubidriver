@@ -64,7 +64,7 @@ SELECT
     cb.c_bpartner_id,
     cb.value,
     cb.name,
-    cl.address1,
+    COALESCE(cl.address1, cl.address2, cl.city),
     point(cl.latitude, cl.longitude),
     cbl.c_bpartner_location_id
 FROM c_bpartner cb
@@ -181,7 +181,7 @@ WHERE ci.c_invoice_id = %s""", invoice_id)
 
             db.execute("""
 UPDATE C_Invoice 
-SET is_confirm = true
+SET is_confirm = 'Y'
 WHERE c_invoice_id = %s""", invoice_id)
 
         if not order_ids:
@@ -222,8 +222,8 @@ WHERE ci.docstatus = 'CO'
     AND ci.C_Order_ID IS NOT NULL
     AND et.FTA_Driver_ID = %s
     AND ci.documentno ILIKE %s
-    AND ci.is_confirm = false""", driver_id, f"%{pattern}%")
-            
+    AND ci.is_confirm IS NULL""", driver_id, f"%{pattern}%")
+
             invoices = {}
             locations = {}
 

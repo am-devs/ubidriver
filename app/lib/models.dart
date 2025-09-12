@@ -2,6 +2,9 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'models.g.dart';
 
+List<dynamic>? _recordToJson((double, double)? record) => record == null ? null : [record.$1, record.$2];
+(double, double)? _recordFromJson(List<dynamic>? jsonList) => jsonList == null ? null : (jsonList[0] as double, jsonList[1] as double);
+
 @JsonSerializable()
 class Customer {
   final String name;
@@ -9,6 +12,7 @@ class Customer {
   final int customerId;
   final String address;
   final String vat;
+  @JsonKey(toJson: _recordToJson, fromJson: _recordFromJson, includeIfNull: false)
   final (double, double)? coordinates;
 
   const Customer({
