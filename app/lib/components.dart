@@ -1,5 +1,6 @@
 
 import 'package:driver_return/models.dart';
+import 'package:driver_return/services.dart';
 import 'package:driver_return/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -177,6 +178,15 @@ class AppScaffold extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.red,
+          onPressed: () {
+            Provider.of<ApiService>(context, listen: false).unauthenticated();
+            AppSnapshot.clear();
+            Navigator.of(context).pushNamed("/login");
+          },
+          child: const Icon(Icons.logout, color: Colors.white,),
+        ),
         resizeToAvoidBottomInset: true,
         backgroundColor: Colors.white,
         body: Column(

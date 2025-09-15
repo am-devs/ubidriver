@@ -128,88 +128,90 @@ class _ReturnPageState extends State<ReturnPage> {
 
     return AppScaffold(
       children: [ 
-        Stepper(
-          connectorColor: WidgetStateProperty.all(Colors.red),
-          connectorThickness: 2,
-          currentStep: _index,
-          controlsBuilder: (context, details) {
-            return Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Row(
-                spacing: 8,
-                children: [
-                  AppButton(
-                    onPressed: details.onStepContinue,
-                    label: "CONTINUAR",
-                  ),
-                  AppButton(
-                    onPressed: details.onStepCancel,
-                    backgroundColor: Colors.blue,
-                    label: "CANCELAR"
-                  )
-                ],
-              )
-            );
-          },
-          onStepCancel: () {
-            if (_index > 0) {
-              setState(() {
-                _index -= 1;
-              });
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
-          onStepContinue: () {
-            // Validar y guardar el formulario actual
-            if (_stepKeys[_index].currentState?.saveForm() ?? false) {
-              if (_index < _lines.length - 1) {
-                setState(() {
-                  _index += 1;
-                });
-
-                return;
-              } 
-            }
-
-            final state = Provider.of<AppState>(context, listen: false);
-
-            state.returnInvoice(_returnData);
-          
-            Navigator.of(context).pop();
-          },
-          onStepTapped: (int index) {
-            setState(() {
-              _index = index;
-            });
-          },
-          steps: _lines.asMap().entries.map((entry) {
-            final index = entry.key;
-            final line = entry.value;
-            
-            return Step(
-              title: Text(line.product.name),
-              stepStyle: StepStyle(
-                color: Colors.red.shade800,
-                indexStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)
-              ),
-              content: Padding(
+        SingleChildScrollView(
+          child : Stepper(
+            connectorColor: WidgetStateProperty.all(Colors.red),
+            connectorThickness: 2,
+            currentStep: _index,
+            controlsBuilder: (context, details) {
+              return Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: _ProductStep(
-                line.quantity,
-                (reason, quantity) {
-                  _returnData[_lines[index].product.id] = ReturnLine(
-                    lineId: _lines[index].lineId,
-                    product: _lines[index].product,
-                    reason: types[int.parse(reason)]!,
-                    quantity: quantity,
-                  );
-                },
-                stepKey: _stepKeys[index],
-              ),
-              )
-            );
-          }).toList(),
+                child: Row(
+                  spacing: 8,
+                  children: [
+                    AppButton(
+                      onPressed: details.onStepContinue,
+                      label: "CONTINUAR",
+                    ),
+                    AppButton(
+                      onPressed: details.onStepCancel,
+                      backgroundColor: Colors.blue,
+                      label: "CANCELAR"
+                    )
+                  ],
+                )
+              );
+            },
+            onStepCancel: () {
+              if (_index > 0) {
+                setState(() {
+                  _index -= 1;
+                });
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
+            onStepContinue: () {
+              // Validar y guardar el formulario actual
+              if (_stepKeys[_index].currentState?.saveForm() ?? false) {
+                if (_index < _lines.length - 1) {
+                  setState(() {
+                    _index += 1;
+                  });
+
+                  return;
+                } 
+              }
+
+              final state = Provider.of<AppState>(context, listen: false);
+
+              state.returnInvoice(_returnData);
+            
+              Navigator.of(context).pop();
+            },
+            onStepTapped: (int index) {
+              setState(() {
+                _index = index;
+              });
+            },
+            steps: _lines.asMap().entries.map((entry) {
+              final index = entry.key;
+              final line = entry.value;
+              
+              return Step(
+                title: Text(line.product.name),
+                stepStyle: StepStyle(
+                  color: Colors.red.shade800,
+                  indexStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)
+                ),
+                content: Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: _ProductStep(
+                  line.quantity,
+                  (reason, quantity) {
+                    _returnData[_lines[index].product.id] = ReturnLine(
+                      lineId: _lines[index].lineId,
+                      product: _lines[index].product,
+                      reason: types[int.parse(reason)]!,
+                      quantity: quantity,
+                    );
+                  },
+                  stepKey: _stepKeys[index],
+                ),
+                )
+              );
+            }).toList(),
+          )
         ),
       ]
     );

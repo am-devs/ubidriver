@@ -114,7 +114,7 @@ LIMIT 1""", invoice_id)
             data = conn.execute(
                 "ian.sale.return",
                 "action_search_by_adempiere_order",
-                [order_id]
+                order_id
             )
 
             return ReturnStatus(**data)
@@ -128,11 +128,12 @@ class ReturnInvoice(BaseModel):
     lines: list[ReturnInvoiceLine]
 
     def return_invoice(self, invoice_id: int):
-        order_id = 0
+        order_id, partner_id = 0, 0
+        line_products = {}
 
         with Database() as db:
             db.execute("""
-SELECT co.c_order_id::integer
+SELECT co.c_order_id::integer, co.c_bpartner_id::integer
 FROM C_Order co
 JOIN C_Invoice ci ON co.C_Order_ID = ci.C_Order_ID
 WHERE ci.c_invoice_id::integer = %s
@@ -142,16 +143,33 @@ LIMIT 1""", invoice_id)
 
             if result:
                 order_id = result[0]
+                partner_id = result[1]
+            else:
+                raise Exception("No se encontró una venta por ese ID")
 
-        if not order_id:
-            raise Exception("No se encontró una venta por ese ID")
+            db.execute("""
+SELECT c_invoiceline_id::integer, m_product_id::integer
+FROM c_invoiceLine
+WHERE c_invoiceline_id = ANY(%s)""", [l.line_id for l in self.lines])
+            
+            line_products = {r[0]: r[1] for r in db.fetchall()}
+
+        vals = []
+
+        for line in self.lines:
+            dump = line.model_dump()
+
+            dump["product_id"] = line_products.get(line.line_id, 0)
+
+            vals.append(dump)
 
         with OdooConnection() as conn:
             result = conn.execute(
                 "ian.sale.return",
                 "action_create_from_adempiere_data",
                 order_id,
-                [l.model_dump() for l in self.lines]
+                partner_id,
+                vals
             )
 
             return result
@@ -185,13 +203,13 @@ SET is_confirm = 'Y'
 WHERE c_invoice_id = %s""", invoice_id)
 
         if not order_ids:
-            raise Exception("Order not found")
+            return True
 
         with OdooConnection() as conn:
             ids = conn.search_ids("sale.order", [("record_identifer_id", "in", order_ids), ("is_direct_dispatch","=",True)])
 
             if not ids:
-                raise Exception("La órden no existe")
+                return True
 
             conn.execute("sale.order", "action_confirm_delivery_by_driver", ids)
 
@@ -221,8 +239,7 @@ WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
     AND ci.C_Order_ID IS NOT NULL
     AND et.FTA_Driver_ID = %s
-    AND ci.documentno ILIKE %s
-    AND ci.is_confirm IS NULL""", driver_id, f"%{pattern}%")
+    AND ci.documentno ILIKE %s""", driver_id, f"%{pattern}%")
 
             invoices = {}
             locations = {}

@@ -13,6 +13,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final List<Invoice> _invoices = [];
   final TextEditingController _searchController = TextEditingController();
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class _SearchPageState extends State<SearchPage> {
             shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             trailing: [const Icon(Icons.search, size: 32,)],
             hintText: "BUSCAR FACTURA",
-            onSubmitted: _onSubmitted,
+            onSubmitted: _loading ? null : _onSubmitted,
           ),
         ),
         if (_invoices.isNotEmpty)
@@ -50,7 +51,7 @@ class _SearchPageState extends State<SearchPage> {
               separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 4,),
             )
           )
-        else
+        else if (!_loading)
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -59,7 +60,9 @@ class _SearchPageState extends State<SearchPage> {
                 const Text("No hay nada que mostrar", style: TextStyle(color: Colors.grey, fontSize: 24),)
               ],
             ),
-          ),
+          )
+        else
+          Center(child: CircularProgressIndicator(),),
         if (_invoices.isNotEmpty)
           SizedBox(
             height: 48,
@@ -70,7 +73,11 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _onSubmitted(String value) async {
-    // try {
+    try {
+      setState(() {
+        _loading = true;
+      });
+
       final results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
 
       if (mounted && results.isEmpty) {
@@ -84,12 +91,16 @@ class _SearchPageState extends State<SearchPage> {
           _searchController.clear();
         });
       }
-    // } catch (e) {
-    //   if (mounted) {
-    //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    //       content: Text('Ocurrió un error: $e'),
-    //     ));
-    //   }
-    // }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Ocurrió un error: $e'),
+        ));
+      }
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 }

@@ -131,4 +131,7 @@ class OdooConnection:
 
         print(data)
 
+        if "error" in data:
+            return None
+
         return data["result"]

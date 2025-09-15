@@ -220,8 +220,6 @@ class _AppConfirmButtonState extends State<_AppConfirmButton> {
                 AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
                 Navigator.of(context).pushNamed("/approval");
                 return;
-              } else {
-                state.advanceState();
               }
             }
           } catch(e) {
@@ -234,12 +232,17 @@ class _AppConfirmButtonState extends State<_AppConfirmButton> {
             }
           }
         }
+
+        state.advanceState();
         
         // Finalize everything
         try {
           await api.post("/invoices/${state.invoice!.id}/confirm");
 
-          state.advanceState();
+          if (state.currentState != DeliveryState.confirmed) {
+            state.advanceState();
+          }
+
           state.clearInvoice();
           AppSnapshot.clear();
 
