@@ -138,6 +138,7 @@ class AppState extends ChangeNotifier implements Memento {
 
   void resetState() {
     _status = DeliveryState.searchingInvoice;
+    _invoice?.returns.clear();
     _invoice = null;
     _returnLines.clear();
 

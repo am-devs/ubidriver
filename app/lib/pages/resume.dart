@@ -92,6 +92,11 @@ class ResumePage extends StatelessWidget {
     final defaultStyle = TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w400);
     const redStyle = TextStyle(fontWeight: FontWeight.bold, color: Colors.red);
 
+    final returns = <TextSpan>[
+      TextSpan(text: "\n\nTOTAL A DEVOLVER:\n", style: boldStyle),
+      TextSpan(text: invoice.returnQuantity.toString(), style: redStyle),
+    ];
+
     return AppScaffold(
       children: [
         if (!isApproved)
@@ -102,7 +107,7 @@ class ResumePage extends StatelessWidget {
         Center(
           child: const Icon(
             Icons.check_circle_rounded,
-            size: 128,
+            size: 96,
             color: Colors.green,
           ),
         ),
@@ -112,7 +117,7 @@ class ResumePage extends StatelessWidget {
             child: const Text(
               "VERIFIQUE SI LOS DATOS SON LOS CORRECTOS",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
         if (custom.coordinates != null)
@@ -134,7 +139,7 @@ class ResumePage extends StatelessWidget {
             },
           ),
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 20),
+          padding: EdgeInsets.symmetric(vertical: 16),
           child: RichText(
             text: TextSpan(
               text: 'Número de factura ',
@@ -147,10 +152,11 @@ class ResumePage extends StatelessWidget {
         ),
         SizedBox(
           width: MediaQuery.sizeOf(context).width,
-          height: MediaQuery.sizeOf(context).height * 0.35,
+          height: MediaQuery.sizeOf(context).height * 0.4,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 48),
+            padding: EdgeInsets.symmetric(horizontal: 32),
             child: RichText(
+              textAlign: TextAlign.justify,
               text: TextSpan(
                 text: 'FECHA: ',
                 style: boldStyle,
@@ -163,9 +169,11 @@ class ResumePage extends StatelessWidget {
                   TextSpan(text: "\nDIRECCION: ", style: boldStyle),
                   TextSpan(text: custom.address.toUpperCase(), style: defaultStyle),
                   TextSpan(text: "\n\nTOTAL DE PRODUCTOS:\n", style: boldStyle),
-                  TextSpan(text: invoice.lines.map((p)=> p.product.name).join(", ").toUpperCase(), style: redStyle),
+                  TextSpan(text: invoice.lines.map((p)=> p.product.name).join(", ").toUpperCase(), style: redStyle,),
                   TextSpan(text: "\n\nTOTAL DE BULTOS:\n", style: boldStyle),
                   TextSpan(text: invoice.totalQuantity.toString(), style: redStyle),
+                  if (invoice.returns.isNotEmpty)
+                    ...returns
                 ],
               ),
             )
@@ -230,7 +238,13 @@ class _AppConfirmButtonState extends State<_AppConfirmButton> {
                 content: Text('Ocurrió un error: $e'),
               ));
             }
-          }
+
+            setState(() {
+              _loading = false;
+            });
+
+            return;
+          } 
         }
 
         state.advanceState();

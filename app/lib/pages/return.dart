@@ -128,8 +128,7 @@ class _ReturnPageState extends State<ReturnPage> {
 
     return AppScaffold(
       children: [ 
-        SingleChildScrollView(
-          child : Stepper(
+        Stepper(
             connectorColor: WidgetStateProperty.all(Colors.red),
             connectorThickness: 2,
             currentStep: _index,
@@ -168,16 +167,14 @@ class _ReturnPageState extends State<ReturnPage> {
                   setState(() {
                     _index += 1;
                   });
+                } else {
+                  final state = Provider.of<AppState>(context, listen: false);
 
-                  return;
-                } 
+                  state.returnInvoice(_returnData);
+                
+                  Navigator.of(context).pop();
+                }
               }
-
-              final state = Provider.of<AppState>(context, listen: false);
-
-              state.returnInvoice(_returnData);
-            
-              Navigator.of(context).pop();
             },
             onStepTapped: (int index) {
               setState(() {
@@ -197,22 +194,21 @@ class _ReturnPageState extends State<ReturnPage> {
                 content: Padding(
                   padding: EdgeInsets.only(top: 8),
                   child: _ProductStep(
-                  line.quantity,
-                  (reason, quantity) {
-                    _returnData[_lines[index].product.id] = ReturnLine(
-                      lineId: _lines[index].lineId,
-                      product: _lines[index].product,
-                      reason: types[int.parse(reason)]!,
-                      quantity: quantity,
-                    );
-                  },
-                  stepKey: _stepKeys[index],
-                ),
+                    line.quantity,
+                    (reason, quantity) {
+                      _returnData[_lines[index].product.id] = ReturnLine(
+                        lineId: _lines[index].lineId,
+                        product: _lines[index].product,
+                        reason: types[int.parse(reason)]!,
+                        quantity: quantity,
+                      );
+                    },
+                    stepKey: _stepKeys[index],
+                  ),
                 )
               );
             }).toList(),
           )
-        ),
       ]
     );
   }

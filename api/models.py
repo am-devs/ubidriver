@@ -61,7 +61,7 @@ class Customer(BaseModel):
     def get_by_locations(db: Database, locations: list[int]):
         db.execute("""
 SELECT
-    cb.c_bpartner_id,
+    cb.c_bpartner_id::integer,
     cb.value,
     cb.name,
     COALESCE(cl.address1, cl.address2, cl.city),

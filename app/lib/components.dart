@@ -187,7 +187,7 @@ class AppScaffold extends StatelessWidget {
           },
           child: const Icon(Icons.logout, color: Colors.white,),
         ),
-        resizeToAvoidBottomInset: true,
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         body: Column(
           children: [
@@ -220,7 +220,7 @@ class AppInvoiceCard extends StatelessWidget {
       child: ListTile(
         enabled: invoice.isApproved,
         contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        leading: FlutterLogo(size: 72.0),
+        leading: const Image(image: AssetImage("assets/logo.png"), width: 72,),
         title: Text(
           invoice.code,
           style: TextStyle(

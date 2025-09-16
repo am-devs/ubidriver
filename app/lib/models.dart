@@ -119,14 +119,12 @@ class Invoice {
   double get totalQuantity {
     final double totalInvoice = _lines.map((p) => p.quantity).reduce((value, element) => value + element);
 
-    if (returns.isEmpty) {
-      return totalInvoice;
-    }
-
-    final double totalReturn = returns.values.map((p) => p.quantity).reduce((value, element) => value + element);
-
-    return totalInvoice - totalReturn;
+    return totalInvoice - returnQuantity;
   }
+
+  double get returnQuantity => returns.isNotEmpty
+      ? returns.values.map((p) => p.quantity).reduce((value, element) => value + element)
+      : 0;
 
   Invoice({
     required this.code,

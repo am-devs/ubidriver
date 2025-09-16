@@ -16,6 +16,13 @@ class _SearchPageState extends State<SearchPage> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    _invoices.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppScaffold(
       children: [
@@ -51,7 +58,7 @@ class _SearchPageState extends State<SearchPage> {
               separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 4,),
             )
           )
-        else if (!_loading)
+        else if (_invoices.isEmpty && !_loading)
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
