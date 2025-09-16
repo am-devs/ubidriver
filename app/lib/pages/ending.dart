@@ -1,5 +1,5 @@
-import 'package:driver_return/components.dart';
-import 'package:driver_return/state.dart';
+import 'package:gdd/components.dart';
+import 'package:gdd/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gif/gif.dart';

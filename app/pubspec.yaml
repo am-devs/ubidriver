@@ -1,5 +1,5 @@
-name: driver_return
-description: "A new Flutter project."
+name: gdd
+description: "Aplicación para confirmar o registrar devoluciones en los despachos directos"
 publish_to: 'none'
 version: 0.1.0
 
@@ -24,6 +24,14 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   build_runner: ^2.5.4
   json_serializable: ^6.9.5
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "gdd_icon"
+  image_path: "assets/icon.png"
+  adaptive_icon_background: "assets/icon-background.png"
+  adaptive_icon_foreground: "assets/icon-foreground.png"
+  adaptive_icon_foreground_inset: 4
 
 flutter:
   uses-material-design: true

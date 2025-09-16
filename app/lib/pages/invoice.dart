@@ -1,6 +1,6 @@
-import 'package:driver_return/models.dart';
-import 'package:driver_return/components.dart';
-import 'package:driver_return/state.dart';
+import 'package:gdd/models.dart';
+import 'package:gdd/components.dart';
+import 'package:gdd/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
