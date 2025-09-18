@@ -18,6 +18,7 @@ const int _pollingTime = 10;
 class _ApprovalPageState extends State<ApprovalPage> {
   Timer? _pollingTimer;
   bool _isLoading = false;
+  bool _approved = false;
 
   @override
   void initState() {
@@ -36,7 +37,13 @@ class _ApprovalPageState extends State<ApprovalPage> {
             state.setReturnStatus(status);
             state.advanceState();
             AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
+
+            setState(() {
+              _approved = true;
+            });
+
             timer.cancel();
+            
           }
         } catch (error) {
           print('Error en polling: $error');
@@ -68,7 +75,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
         Padding(
           padding: EdgeInsets.only(top: 16),
           child: Text(
-            "PENDIENTE POR CONFIRMAR",
+            !_approved ? "PENDIENTE POR CONFIRMAR" : "CONFIRMADA",
             style: TextStyle(color: Colors.grey.shade600, fontSize: 24, fontWeight: FontWeight.bold),
           )
         ),
@@ -76,45 +83,25 @@ class _ApprovalPageState extends State<ApprovalPage> {
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: AppInvoiceCard(
             invoice: state.invoice!,
-            onTap: _isLoading ? null : () async {
-              Map<String, double>? body;
-
-              try {
-                Position coordinates = await getPosition();
-
-                body = {
-                  "latitude": coordinates.latitude,
-                  "longitude": coordinates.longitude,
-                };
-              } catch(e) {
-                print(e);
-              }
-
+            onTap: _isLoading ? null : () {
+            
               // Finalize everything
               try {
                 setState(() {
                   _isLoading = true;
                 });
 
-                final api = Provider.of<ApiService>(context, listen: false);
-
-                await api.post("/invoices/${state.invoice!.id}/confirm", body: body);
-
                 state.advanceState();
                 state.clearInvoice();
                 AppSnapshot.clear();
 
-                if (context.mounted) {
-                  Navigator.of(context).pushNamed("/ending");
-                }
+                Navigator.of(context).pushNamed("/ending");
               } catch(e) {
                 print(e);
 
-                if(context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Ocurrió un error: $e'),
-                  ));
-                }
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Ocurrió un error: $e'),
+                ));
               } finally {
                 setState(() {
                   _isLoading = false;

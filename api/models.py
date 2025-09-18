@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, Tuple
+from typing import Optional
 from pydantic import BaseModel
 from services import Database, OdooConnection
 from passlib.context import CryptContext
@@ -46,10 +46,36 @@ WHERE ci.c_invoice_id = ANY(%s)""", ids)
 
         return data
 
-type Point = Tuple[float, float]
+class Point(BaseModel):
+    latitude: float
+    longitude: float
 
-_parse_point = lambda p: tuple(float(r) for r in p[1:-1].split(","))
+    @staticmethod
+    def export_from_customer():
+        with Database() as db:
+            db.execute("""
+SELECT
+    cb.c_bpartner_id::integer,
+    cl.latitude,
+    cl.longitude,
+    cb.name
+FROM c_bpartner cb
+JOIN c_bpartner_location cbl ON cbl.c_bpartner_id = cb.c_bpartner_id
+JOIN c_location cl ON cl.c_location_id = cbl.c_location_id
+WHERE cl.latitude IS NOT NULL AND cl.longitude IS NOT NULL""")
 
+            data = []
+
+            for rec in db.fetchall():
+                data.append({
+                    "record_identifer_id": rec[0],
+                    "latitude": rec[1],
+                    "longitude": rec[2],
+                    "name": rec[3]
+                })
+
+            return data
+        
 class Customer(BaseModel):
     customer_id: int
     name: str
@@ -65,7 +91,6 @@ SELECT
     cb.value,
     cb.name,
     COALESCE(cl.address1, cl.address2, cl.city),
-    point(cl.latitude, cl.longitude),
     cbl.c_bpartner_location_id
 FROM c_bpartner cb
 JOIN c_bpartner_location cbl ON cbl.c_bpartner_id = cb.c_bpartner_id AND cbl.c_bpartner_location_id = ANY(%s)
@@ -79,7 +104,6 @@ JOIN c_location cl ON cl.c_location_id = cbl.c_location_id""", locations)
                 vat=rec[1],
                 name=rec[2],
                 address=rec[3],
-                coordinates=rec[4] and _parse_point(rec[4])
             )
             
             data[rec[-1]] = custom
@@ -126,6 +150,7 @@ class ReturnInvoiceLine(BaseModel):
 
 class ReturnInvoice(BaseModel):
     lines: list[ReturnInvoiceLine]
+    coordinates: Optional[Point] = None
 
     def return_invoice(self, invoice_id: int):
         order_id, partner_id = 0, 0
@@ -167,9 +192,12 @@ WHERE c_invoiceline_id = ANY(%s)""", [l.line_id for l in self.lines])
             result = conn.execute(
                 "ian.sale.return",
                 "action_create_from_adempiere_data",
-                order_id,
-                partner_id,
-                vals
+                {
+                    "order_id": order_id,
+                    "partner_id": partner_id,
+                    "lines": vals,
+                    "coordinates": self.coordinates and self.coordinates.model_dump()
+                }
             )
 
             return result
@@ -185,7 +213,7 @@ class Invoice(BaseModel):
     return_status: Optional[ReturnStatus] = None
     
     @staticmethod
-    def confirm_invoice(invoice_id: int):
+    def confirm_invoice(invoice_id: int, coordinates: Point = None):
         order_ids = []
 
         with Database() as db:
@@ -211,12 +239,12 @@ WHERE c_invoice_id = %s""", invoice_id)
             if not ids:
                 return True
 
-            conn.execute("sale.order", "action_confirm_delivery_by_driver", ids)
+            conn.execute("sale.order", "action_confirm_delivery_by_driver", ids, coordinates and coordinates.model_dump())
 
         return True
 
     @staticmethod
-    def get_by_driver_and_pattern(driver_id: int, pattern: str):
+    def get_by_driver(driver_id: int):
         with Database() as db:
             db.execute("""
 SELECT DISTINCT
@@ -237,9 +265,10 @@ JOIN C_DocType as ctype on ci.C_DocType_ID = ctype.C_DocType_ID
 JOIN C_DocBaseType as baset on ctype.C_DocBaseType_ID = baset.C_DocBaseType_ID
 WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
-    AND ci.C_Order_ID IS NOT NULL
-    AND et.FTA_Driver_ID = %s
-    AND ci.documentno ILIKE %s""", driver_id, f"%{pattern}%")
+	AND ci.C_Order_ID IS NOT NULL
+  AND et.FTA_Driver_ID = %s
+	AND ci.is_confirm IS NULL
+ORDER BY ci.dateacct::date DESC""", driver_id)
 
             invoices = {}
             locations = {}

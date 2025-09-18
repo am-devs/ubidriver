@@ -18,12 +18,12 @@ def get_ping():
     }
 
 @app.get("/invoices")
-def get_invoices(response: Response, pattern: str, token: str = Depends(oauth2_scheme)):
+def get_invoices(response: Response, token: str = Depends(oauth2_scheme)):
     try:
         user = get_user_data(token)
         driver_id = models.check_for_driver(user["username"][1:])
 
-        return models.Invoice.get_by_driver_and_pattern(driver_id, pattern)
+        return models.Invoice.get_by_driver(driver_id)
     except Exception as e:
         print(e)
 
@@ -34,11 +34,13 @@ def get_invoices(response: Response, pattern: str, token: str = Depends(oauth2_s
         }
 
 @app.post("/invoices/{id}/confirm")
-def post_invoices_id_confirm(id: int, response: Response, token: str = Depends(oauth2_scheme)):
+def post_invoices_id_confirm(id: int, response: Response, coordinates: models.Point = None, token: str = Depends(oauth2_scheme)):
     try:
         get_user_data(token)
 
-        models.Invoice.confirm_invoice(id)
+        logger.info(coordinates)
+
+        models.Invoice.confirm_invoice(id, coordinates)
     except Exception as e:
         logger.exception("Error")
 
@@ -134,7 +136,18 @@ def get_export_devolution_types(response: Response):
     try:
         return models.DevolutionType.to_export()
     except Exception as e:
-        response.status_code = status.HTTP_403_FORBIDDEN
+        response.status_code = status.HTTP_400_BAD_REQUEST
+
+        return {
+            "error": str(e)
+        }
+    
+@app.get("/export/partner-coordinates")
+def get_partner_coordinates(response: Response):
+    try:
+        return models.Point.export_from_customer()
+    except Exception as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
 
         return {
             "error": str(e)

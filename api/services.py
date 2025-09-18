@@ -104,9 +104,14 @@ class OdooConnection:
 
         response.raise_for_status()
 
-        data = response.json()["result"]
+        data = response.json()
 
-        return tuple(r["id"] for r in data)
+        print(data)
+
+        if "error" in data:
+            return tuple()
+
+        return tuple(r["id"] for r in data["result"])
 
     def execute(self, model: str, method: str, *arguments):
         response = requests.post(ODOO_DATA["url"], json={

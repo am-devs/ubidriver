@@ -213,7 +213,7 @@ class AppInvoiceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           width: 2.0,
-          color: Colors.red
+          color: invoice.returnStatus?.approvalStatus != "approved" ? Colors.red : Colors.green.shade600
         )
       ),
       color: invoice.isApproved ? Colors.white : Colors.red.shade50,

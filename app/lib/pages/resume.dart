@@ -160,7 +160,11 @@ class _AppConfirmButtonState extends State<_AppConfirmButton> {
             if (context.mounted) {
               if (status.approvalStatus == "waiting") {
                 AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
+
+                await api.post("/invoices/${state.invoice!.id}/confirm", body: body);
+
                 Navigator.of(context).pushNamed("/approval");
+
                 return;
               }
             }

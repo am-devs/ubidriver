@@ -14,12 +14,49 @@ class _SearchPageState extends State<SearchPage> {
   final List<Invoice> _invoices = [];
   final TextEditingController _searchController = TextEditingController();
   bool _loading = false;
+  String _pattern = "";
+
+  List<Invoice> get _filteredInvoices {
+    if (_pattern.isEmpty) {
+      return _invoices;
+    } else {
+      return _invoices.where((i) => i.code.toLowerCase().contains(_pattern)).toList();
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
-    _invoices.clear();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchInvoices();
+    });
+  }
+
+  Future<void> _fetchInvoices() async {
+    try {
+      setState(() {
+        _loading = true;
+      });
+
+      final results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices");
+
+      setState(() {
+        _invoices.clear();
+        _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
+        _searchController.clear();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Ocurrió un error: $e'),
+        ));
+      }
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -34,31 +71,38 @@ class _SearchPageState extends State<SearchPage> {
             shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             trailing: [const Icon(Icons.search, size: 32,)],
             hintText: "BUSCAR FACTURA",
-            onSubmitted: _loading ? null : _onSubmitted,
+            onSubmitted: (String pattern) {
+              setState(() {
+                _pattern = pattern;
+              });
+            },
           ),
         ),
-        if (_invoices.isNotEmpty)
+        if (_filteredInvoices.isNotEmpty)
           Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              shrinkWrap: true,
-              itemCount: _invoices.length,
-              itemBuilder: (context, index) => AppInvoiceCard(
-                invoice: _invoices[index],
-                onTap: () {
-                  final state = Provider.of<AppState>(context, listen: false);
+            child: RefreshIndicator(
+              onRefresh: _fetchInvoices,
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                shrinkWrap: true,
+                itemCount: _filteredInvoices.length,
+                itemBuilder: (context, index) => AppInvoiceCard(
+                  invoice: _filteredInvoices[index],
+                  onTap: () {
+                    final state = Provider.of<AppState>(context, listen: false);
 
-                  state.setInvoice(_invoices[index]);
+                    state.setInvoice(_filteredInvoices[index]);
 
-                  state.advanceState();
+                    state.advanceState();
 
-                  Navigator.of(context).pushNamed("/invoice");
-                },
+                    Navigator.of(context).pushNamed("/invoice");
+                  },
+                ), 
+                separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 4,),
               ), 
-              separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 4,),
             )
           )
-        else if (_invoices.isEmpty && !_loading)
+        else if (_filteredInvoices.isEmpty && !_loading)
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,44 +114,12 @@ class _SearchPageState extends State<SearchPage> {
           )
         else
           Center(child: CircularProgressIndicator(),),
-        if (_invoices.isNotEmpty)
+        if (_filteredInvoices.isNotEmpty)
           SizedBox(
             height: 48,
-            child: Center(child: Text("Facturas encontradas: ${_invoices.length}"),),
+            child: Center(child: Text("Facturas encontradas: ${_filteredInvoices.length}"),),
           )
       ]
     );
-  }
-
-  Future<void> _onSubmitted(String value) async {
-    try {
-      setState(() {
-        _loading = true;
-      });
-
-      final results = await Provider.of<ApiService>(context, listen: false).get<List<dynamic>>("/invoices?pattern=$value");
-
-      if (mounted && results.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("No se encontró ninguna factura por el patrón: '$value'"),
-          ));
-      } else {
-        setState(() {
-          _invoices.clear();
-          _invoices.addAll(results.map((x) => Invoice.fromJson(x)));
-          _searchController.clear();
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Ocurrió un error: $e'),
-        ));
-      }
-    } finally {
-      setState(() {
-        _loading = false;
-      });
-    }
   }
 }
