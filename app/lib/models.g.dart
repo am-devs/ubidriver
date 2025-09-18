@@ -11,7 +11,6 @@ Customer _$CustomerFromJson(Map<String, dynamic> json) => Customer(
   customerId: (json['customer_id'] as num).toInt(),
   address: json['address'] as String,
   vat: json['vat'] as String,
-  coordinates: _recordFromJson(json['coordinates'] as List?),
 );
 
 Map<String, dynamic> _$CustomerToJson(Customer instance) => <String, dynamic>{
@@ -19,8 +18,6 @@ Map<String, dynamic> _$CustomerToJson(Customer instance) => <String, dynamic>{
   'customer_id': instance.customerId,
   'address': instance.address,
   'vat': instance.vat,
-  if (_recordToJson(instance.coordinates) case final value?)
-    'coordinates': value,
 };
 
 Product _$ProductFromJson(Map<String, dynamic> json) =>

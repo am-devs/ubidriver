@@ -5,6 +5,7 @@ import 'package:gdd/models.dart';
 import 'package:gdd/services.dart';
 import 'package:gdd/state.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class ApprovalPage extends StatefulWidget {
@@ -76,6 +77,19 @@ class _ApprovalPageState extends State<ApprovalPage> {
           child: AppInvoiceCard(
             invoice: state.invoice!,
             onTap: _isLoading ? null : () async {
+              Map<String, double>? body;
+
+              try {
+                Position coordinates = await getPosition();
+
+                body = {
+                  "latitude": coordinates.latitude,
+                  "longitude": coordinates.longitude,
+                };
+              } catch(e) {
+                print(e);
+              }
+
               // Finalize everything
               try {
                 setState(() {
@@ -84,7 +98,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
 
                 final api = Provider.of<ApiService>(context, listen: false);
 
-                await api.post("/invoices/${state.invoice!.id}/confirm");
+                await api.post("/invoices/${state.invoice!.id}/confirm", body: body);
 
                 state.advanceState();
                 state.clearInvoice();
