@@ -3,31 +3,89 @@
 <head>
   <meta charset="utf-8">
   <style>
+    :root {
+        --primary-color: #ED1B1B;
+    }
+
     body {
-      min-width: 400px;
+        margin: 0;
+        min-width: 380px;
+        font-size: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      background-color: var(--primary-color);
+      text-align: center;
+      border-radius: 0 0 1rem 1rem;
     }
 
     form {
       display: flex;
+      padding: 1rem;
+      row-gap: .5rem;
       flex-direction: column;
+    }
+
+
+    button {
+        padding: .5rem .35rem;
+        border-radius: .5rem;
+        outline: none;
+        border: 0;
+        color: white;
+        font-weight: bold;
+        background-color: var(--primary-color);
+        cursor: pointer;
+
+        &:active {
+            transform: scale(110%);
+        }
+
+        &:hover {
+            filter: brightness(95%);
+        }
+
+        &:disabled {
+          cursor: not-allowed;
+          filter: brightness(90%);
+        }
+    }
+
+    input {
+        appearance: none;
+        border: none;
+        padding: .75rem;
+        background-color: #FFF8F8;
+        border-radius: .3rem;
+        border: 1px solid #D83625;
+        width: 90%;
+    }
+
+    p {
+      color: var(--primary-color);
+    }
+
+    input::placeholder {
+        color: #9f0202;
     }
   </style>
 </head>
 <body>
     <h1>
-      <img src="logo2.png" width="256" />
-      Bienvenido
+      <img src="logo2.png" width="128" />
     </h1>
   <form>
     <label>
-      Usuario
-      <input name="username" type="text">
+      Usuario:
+      <input name="username" type="text" required>
     </label>
     <label>
-      Contraseña
-      <input name="password" type="password">
+      Contraseña:
+      <input name="password" type="password" required>
     </label>
-    <button>Enviar</button>
+    <p></p>
+    <button>ENVIAR</button>
   </form>
   <script src="popup.js"></script>
 </body>

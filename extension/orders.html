@@ -3,86 +3,209 @@
 <head>
   <meta charset="utf-8">
   <style>
+    :root {
+        --primary-color: #ED1B1B;
+    }
+
     body {
-        min-width: 400px;
+        margin: 0;
+        min-width: 380px;
+        font-size: 16px;
+    }
+
+    h2, h3, h4 {
+        margin: 0;
     }
 
     section {
         display: flex;
         flex-direction: column;
+        row-gap: .5rem;
+        padding: 1rem .5rem;
+
+        h2 {
+            text-align: center;
+        }
     }
 
-    .order > div {
+    button {
+        cursor: pointer;
+
+        &:active {
+            transform: scale(110%);
+        }
+
+        &:hover {
+            filter: brightness(95%);
+        }
+    }
+
+    .order {
+        border: 2px solid var(--primary-color);
+        border-radius: .5rem;
+
+        &:has(.order__header:only-child):hover {
+            cursor: pointer;
+            background-color: #FFF7F7;
+        }
+    }
+
+    .order__header {
         display: grid;
-        column-gap: .25rem;
+        column-gap: .35rem;
         grid-template-areas: 
             "image image title title button"
             "image image span span button";
+        align-items: center;
+        padding: .35rem .5rem;
 
         img {
             grid-area: image;
         }
 
         h3 {
-            font-size: 1.5rem;
+            text-align: center;
+            font-size: 1rem;
             grid-area: title;
+            margin: 0;
         }
 
         span {
             justify-self: end;
             grid-area: span;
+            display: inline-block;
+            padding: .5rem;
+            color: white;
+            background-color: var(--primary-color);
+            border-radius: .5rem;
         }
 
         svg {
+            color: var(--primary-color);
+            width: 2rem;
+            height: 2rem;
             grid-area: button;
         }
     }
 
     .order__details {
-        dt {
+        display: flex;
+        flex-direction: column;
+        padding: .5rem;
+
+        .title {
             font-weight: bold;
         }
 
-        table {
-            caption-side: top;
+        .partner {
+            padding: .5rem;
+            margin: 0;
+            text-transform: uppercase;
         }
 
-        span {
+        .error {
+            color: var(--primary-color);
+        }
+
+        details {
+            margin-bottom: .5rem;
+            background-color: #FFF8F8;
+            border-radius: .5rem;
+            padding: .3rem;
+            border: solid 2px var(--primary-color);
+            font-weight: 1.5rem;
+        }
+
+        summary {
+            font-weight: bold;
+            color: black;
+        }
+
+        details > span {
+            color: black;
+            font-weight: bold;
+        }
+
+        h4 {
+            text-align: center;
+            margin-bottom: .3rem;
+        }
+
+        > span {
             display: inline-flex;
-            justify-items: center;
+            justify-content: space-evenly;
             margin: auto;
+            column-gap: .2rem;
+            padding: .75rem;
+        }
+
+        button {
+            padding: .5rem .35rem;
+            border-radius: .5rem;
+            outline: none;
+            border: 0;
+            color: white;
+            font-weight: bold;
+        }
+
+        button:first-child {
+            background-color: #1CA900;
+        }
+
+        button:last-child {
+            background-color: var(--primary-color);
+        }
+
+    }
+
+    #searchbox {
+        text-align: center;
+        padding: 1.5rem;
+        background-color: var(--primary-color);
+        border-radius: 0 0 1rem 1rem;
+
+        input {
+            appearance: none;
+            border: none;
+            padding: .75rem;
+            background-color: #D90000;
+            border-radius: .3rem;
+            width: 90%;
+        }
+
+        input::placeholder {
+            color: #9f0202;
         }
     }
   </style>
 </head>
 <body>
-    <header>
-        <input type="search" placeholder="Buscar" />
-    </header>
+    <div id="searchbox">
+        <input type="search" placeholder="BUSCAR" />
+    </div>
     <section>
         <template id="detail">
-            <div class="order__details">
-                <dl>
-                    <dt>CLIENTE</dt>
-                    <dd></dd>
-                    <dt>RIF</dt>
-                    <dd></dd>
-                    <dt>DIRECCION</dt>
-                    <dd></dd>
-                </dl>
-                <table>
-                    <caption>PRODUCTOS</caption>
-                    <tbody></tbody>
-                </table>
+            <article class="order__details">
+                <p class="partner">
+                    <span class="title">CLIENTE</span>
+                    <br />
+                    <span class="title">RIF</span>
+                    <br />
+                    <span class="title">DIRECCION</span>
+                </p>
+                <h4>PRODUCTOS</h4>
                 <span>
-                    <button>CONFIRMAR</button>
-                    <button>RECHAZAR</button>
+                    <button value="approve">CONFIRMAR</button>
+                    <button value="disapproved">RECHAZAR</button>
                 </span>
-            </div>
+                <p class="error">
+
+                </p>
+            </article>
         </template>
         <template id="order">
             <article class="order">
-                <div>
+                <div class="order__header">
                     <img src="./logo.png" width="96" />
                     <h3></h3>
                     <span></span>

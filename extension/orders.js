@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     sessionId: data.sessionId
                 }
             }, onFetchOrders);
+        } else {
+            window.location.href = "./popup.html";
         }
     });
 
@@ -23,73 +25,97 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function generateDetail(response) {
+const NAME = "products";
+
+function removeOrderAndCheckIfTheresMore(orderId) {
+    document.querySelector(`[data-order-id="${orderId}"]`)?.remove();
+
+    if (document.querySelectorAll("[data-order-id]").length === 0) {
+        const $section = document.querySelector("section");
+
+        const $h2 = document.createElement("h2");
+
+        $h2.textContent = "No hay nada que mostrar!";
+
+        $section.append($h2);
+    }
+}
+
+function generateDetail(data) {
     const $template = document.getElementById("detail");
     const $clone = $template.content.cloneNode(true);
 
-    // Partner
-    const $$dd = $clone.querySelectorAll("dd");
+    if (data.partner) {
+        const $$span = $clone.querySelectorAll(".title");
+    
+        $$span[0].after(new Text(" " + data.partner.name));
+        $$span[1].after(new Text(" " + data.partner.vat));
+        $$span[2].after(new Text(" " + data.partner.address));
+    } else {
+        $clone.querySelector(".partner").remove();
+    }
+    
+    const $root = $clone.querySelector(".order__details");
+    const $buttons = $clone.querySelector(".order__details > span");
 
-    $$dd[0].textContent = response.partner.name;
-    $$dd[1].textContent = response.partner.vat;
-    $$dd[2].textContent = response.partner.address;
+    data.lines.forEach((line) => {
+        const $details = document.createElement("details");
 
-    // Products
-    const $table = $clone.querySelector("table");
-    let $row, $cell;
+        $details.name = NAME;
 
-    response.lines.forEach((line, i) => {
-        $row = $table.insertRow(i);
-        
-        // Data
-        $cell = $row.insertCell(0);
+        const $summary = document.createElement("summary");
 
-        $cell.textContent = line.product;
+        $summary.appendChild(new Text(line.product));
 
-        $cell = $row.insertCell(1);
+        $details.append($summary);
+        $details.append(new Text(`Motivo: `));
 
-        $cell.textContent = line.reason;
+        const $reason = document.createElement("span");
 
-        $cell = $row.insertCell(2);
+        $reason.textContent = line.reason;
 
-        $cell.textContent = line.quantity.toString();
+        $details.append($reason);
+        $details.append(new Text(", Cantidad: "));
+
+        const $quantity = document.createElement("span");
+
+        $quantity.textContent = line.quantity.toString();
+
+        $details.append($quantity);
+
+        $root.insertBefore($details, $buttons);
     });
 
-    // Buttons
-    $clone.querySelector("button:nth-child(1)").addEventListener("click", (e) => {
-        e.currentTarget.disabled = true;
+    const $error = $clone.querySelector(".error");
+
+    $buttons.addEventListener("click", (e) => {
+        if (e.target.tagName !== "BUTTON")
+            return;
+
+        e.target.disabled = true;
+        $error.textContent = "";
 
         chrome.runtime.sendMessage({
-            action: "approve",
+            action: e.target.value,
             payload: {
                 sessionId: sessionId,
-                orderId: response.id
+                orderId: data.id
             }
-        }, (response) => (response.status)
-            ? $clone.parentElement.remove()
-            : e.currentTarget.disabled = false
-        );
-    });
+        }, (response) => {
+            if (response.status) {
+                removeOrderAndCheckIfTheresMore(data.id);
+            } else {
+                e.target.disabled = false;
 
-    $clone.querySelector("button:nth-child(2)").addEventListener("click", (e) => {
-        e.currentTarget.disabled = true;
+                console.error(response.result);
 
-        chrome.runtime.sendMessage({
-            action: "dissaprove",
-            payload: {
-                sessionId: sessionId,
-                orderId: response.id
+                $error.textContent = "Error al procesar la petición";
             }
-        }, (response) => (response.status)
-            ? $clone.parentElement.remove()
-            : e.currentTarget.disabled = false
-        );
+        });
     });
 
     return $clone;
 }
-
-let $temp = null;
 
 function onFetchOrders(response) {
     if (!response.status) {
@@ -98,27 +124,37 @@ function onFetchOrders(response) {
     }
 
     const $section = document.querySelector("section");
+
+    if (response.result.length === 0) {
+        const $h2 = document.createElement("h2");
+
+        $h2.textContent = "No hay nada que mostrar!";
+
+        $section.append($h2);
+
+        return;
+    }
+
     const $fragment = document.createDocumentFragment();
     const $template = document.getElementById("order");
+
     let $clone;
 
     response.result.forEach((order) => {
         $clone = $template.content.cloneNode(true);
         
         $clone.querySelector("h3").textContent = order.name;
-        $clone.querySelector("span").textContent = order.create_date;
+        $clone.querySelector("span").textContent = new Date(order.create_date + "Z").toLocaleString();
         
         const $article = $clone.querySelector("article");
 
         $article.dataset.order = order.name.toLowerCase();
+        $article.dataset.orderId = order.id.toString();
 
         $article.querySelector("div").addEventListener("click", (e) => {
             if (!e.currentTarget.dataset.opened) {
                 // Close all open details
-                if ($temp) {
-                    $temp.remove();
-                    $temp = null;
-                }
+                document.querySelector(".order__details")?.remove();
 
                 chrome.runtime.sendMessage({
                     action: "get",
@@ -128,11 +164,9 @@ function onFetchOrders(response) {
                     }
                 }, (response) => {
                     if (response.status) {
-                        $temp = generateDetail(response.result);
-    
-                        console.dir(e);
+                        const $fragment = generateDetail(response.result);
 
-                        $article.append($temp);
+                        $article.append($fragment);
                     } else {
                         console.error(response.result);
                     }
@@ -142,10 +176,7 @@ function onFetchOrders(response) {
             } else {
                 delete e.currentTarget.dataset.opened;
 
-                if ($temp) {
-                    $temp.remove();
-                    $temp = null;
-                }
+                document.querySelector(".order__details")?.remove();
             }
         });
 
