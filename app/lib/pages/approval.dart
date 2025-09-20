@@ -5,7 +5,6 @@ import 'package:gdd/models.dart';
 import 'package:gdd/services.dart';
 import 'package:gdd/state.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class ApprovalPage extends StatefulWidget {
@@ -43,7 +42,6 @@ class _ApprovalPageState extends State<ApprovalPage> {
             });
 
             timer.cancel();
-            
           }
         } catch (error) {
           print('Error en polling: $error');

@@ -29,7 +29,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       case "approve":
         promise = approveOrder(pay.sessionId, pay.orderId);
         break;
-      case "dissaprove":
+      case "check":
+        promise = checkSession(pay.sessionId);
+        break;
+      case "disapprove":
         promise = disapproveOrder(pay.sessionId, pay.orderId);
     }
 
@@ -81,6 +84,31 @@ async function authenticate(username, password) {
     uid: data.result.uid,
     username: data.result.username
   };
+}
+
+async function checkSession(sessionId) {
+  const response = await fetch(odooUrl + "/web/session/check", {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Cookie': `session_id=${sessionId}`
+    },
+    body: JSON.stringify({})
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Error al consultar la sesión: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error.data.message || 'Error al consultar la sessión');
+  }
+  
+  return true;
 }
 
 async function getDocumentById(sessionId, id) {

@@ -6,13 +6,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.sessionId) {
             console.log("Sesión es: ", sessionId = data.sessionId);
             
-            // Fetch orders
+              // Fetch orders
             chrome.runtime.sendMessage({
-                action: "fetch",
+                action: "check",
                 payload: {
                     sessionId: data.sessionId
                 }
-            }, onFetchOrders);
+            }, (response) => {
+                if (response.status) {
+                    // Fetch orders
+                    chrome.runtime.sendMessage({
+                        action: "fetch",
+                        payload: {
+                            sessionId: data.sessionId
+                        }
+                    }, onFetchOrders);
+                } else {
+                    console.error(response.result);
+
+                    window.location.href = "./popup.html";
+                }
+            });
         } else {
             window.location.href = "./popup.html";
         }
