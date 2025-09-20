@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Aprobador Odoo 18",
+  "version": "1.0",
+  "description": "Extensión para aprobar documentos en Odoo 18",
+  "permissions": [
+    "storage",
+    "scripting",
+    "cookies"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Aprobador Odoo"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

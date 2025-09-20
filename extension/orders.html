@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+        min-width: 400px;
+    }
+
+    section {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .order > div {
+        display: grid;
+        column-gap: .25rem;
+        grid-template-areas: 
+            "image image title title button"
+            "image image span span button";
+
+        img {
+            grid-area: image;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            grid-area: title;
+        }
+
+        span {
+            justify-self: end;
+            grid-area: span;
+        }
+
+        svg {
+            grid-area: button;
+        }
+    }
+
+    .order__details {
+        dt {
+            font-weight: bold;
+        }
+
+        table {
+            caption-side: top;
+        }
+
+        span {
+            display: inline-flex;
+            justify-items: center;
+            margin: auto;
+        }
+    }
+  </style>
+</head>
+<body>
+    <header>
+        <input type="search" placeholder="Buscar" />
+    </header>
+    <section>
+        <template id="detail">
+            <div class="order__details">
+                <dl>
+                    <dt>CLIENTE</dt>
+                    <dd></dd>
+                    <dt>RIF</dt>
+                    <dd></dd>
+                    <dt>DIRECCION</dt>
+                    <dd></dd>
+                </dl>
+                <table>
+                    <caption>PRODUCTOS</caption>
+                    <tbody></tbody>
+                </table>
+                <span>
+                    <button>CONFIRMAR</button>
+                    <button>RECHAZAR</button>
+                </span>
+            </div>
+        </template>
+        <template id="order">
+            <article class="order">
+                <div>
+                    <img src="./logo.png" width="96" />
+                    <h3></h3>
+                    <span></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                </div>
+            </article>
+        </template>
+    </section>
+    <script src="orders.js"></script>
+</body>
+</html>
