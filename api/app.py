@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, Response, WebSocket, WebSocketDisconnect, status
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer
 from authentication import login, get_user_data
 from services import SocketManager
@@ -169,3 +170,11 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_json(data)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+@app.get("/static/extension")
+def get_extension():
+    return FileResponse("static/extension.crx", media_type="application/x-chrome-extension", filename="extension.crx")
+
+@app.get("/static/application")
+def get_application():
+    return FileResponse("static/app.apk", media_type="application/vnd.android.package-archive", filename="app.apk")

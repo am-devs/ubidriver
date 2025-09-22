@@ -1,3 +1,6 @@
+// const API_URL = "http://localhost:8060/odoo/ian.sale.return";
+const API_URL = "https://portalmary.iancarina.com.ve/odoo/ian.sale.return";
+
 let sessionId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -153,7 +156,7 @@ function onFetchOrders(response) {
         
         $clone.querySelector("h3 a").textContent = order.name;
         // Badly done
-        $clone.querySelector("h3 a").href = `http://localhost:8060/odoo/ian.sale.return/${order.id}`;
+        $clone.querySelector("h3 a").href = `${API_URL}/${order.id}`;
         $clone.querySelector("span").textContent = new Date(order.create_date + "Z").toLocaleString();
         
         const $article = $clone.querySelector("article");

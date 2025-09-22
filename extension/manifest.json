@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Aprobador Odoo 18",
+  "name": "Aprobador de devoluciones",
   "version": "1.0",
-  "description": "Extensión para aprobar documentos en Odoo 18",
+  "description": "Extensión para comprobar y aprobar devoluciones de despacho directo",
   "permissions": [
     "storage",
     "scripting",
@@ -11,14 +11,12 @@
     "tabs"
   ],
   "host_permissions": [
-    "http://*/*",
     "https://*/*",
-    "ws://*/*",
     "wss://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Aprobador Odoo"
+    "default_title": "Aprobador"
   },
   "background": {
     "service_worker": "background.js"

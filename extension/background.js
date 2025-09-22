@@ -1,8 +1,10 @@
-// const ODOO_DATABASE = "portal_mary";
-// const odooUrl = new URL("https://portalmary.iancarina.com.ve/");
+const ODOO_DATABASE = "portal_mary";
+const odooUrl = new URL("https://portalmary.iancarina.com.ve/");
+const apiUrl = new URL('wss://chofer.iancarina.com.ve/v1/ws');
 
-const ODOO_DATABASE = "Test";
-const odooUrl = new URL("http://localhost:8060/");
+// const ODOO_DATABASE = "Test";
+// const odooUrl = new URL("http://localhost:8060/");
+// const apiUrl = new URL('ws://localhost:8084/v1/ws');
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     let promise = undefined;
@@ -268,7 +270,7 @@ function keepAlive() {
 }
 
 function connect() {
-  webSocket = new WebSocket('ws://localhost:8084/v1/ws');
+  webSocket = new WebSocket(apiUrl);
 
   webSocket.onopen = (event) => {
     console.log('websocket open');
