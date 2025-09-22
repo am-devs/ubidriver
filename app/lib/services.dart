@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 
 class ApiService implements Memento {
-  static final _baseUrl = Uri.parse("http://192.168.1.189:8084/v1");
+  static final _baseUrl = Uri.parse("https://chofer.iancarina.com.ve/v1");
   String _token = "";
 
   bool get isLoggedIn => _token.isNotEmpty;
