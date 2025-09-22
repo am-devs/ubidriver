@@ -42,12 +42,15 @@ class ResumePage extends StatelessWidget {
             alignment: Alignment.topLeft,
             child: AppBackButton(),
           ),
-        Center(
-          child: const Icon(
-            Icons.check_circle_rounded,
-            size: 96,
-            color: Colors.green,
-          ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Center(
+            child: const Icon(
+              Icons.check_circle_rounded,
+              size: 96,
+              color: Colors.green,
+            ),
+          )
         ),
         if (!isApproved)
           Padding(
@@ -119,6 +122,15 @@ class _AppConfirmButtonState extends State<_AppConfirmButton> {
 
     return AppButton(
       onPressed: _loading ? null : () async {
+        // When loading
+        if (state.currentState == DeliveryState.approved) {
+          state.advanceState();
+          state.clearInvoice();
+          AppSnapshot.clear();
+          Navigator.of(context).pushNamed("/ending");
+          return;
+        }
+
         final api = Provider.of<ApiService>(context, listen: false);
 
         setState(() {

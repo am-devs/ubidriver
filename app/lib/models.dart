@@ -82,9 +82,8 @@ class ReturnStatus {
   final int id;
   @JsonKey(name: 'approval_status')
   final String approvalStatus;
-  final String name;
 
-  ReturnStatus({required this.id, required this.approvalStatus, required this.name});
+  ReturnStatus({required this.id, required this.approvalStatus});
 
   factory ReturnStatus.fromJson(Map<String, dynamic> json) => _$ReturnStatusFromJson(json);
 

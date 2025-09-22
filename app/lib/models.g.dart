@@ -74,14 +74,12 @@ Map<String, dynamic> _$ReturnLineToJson(ReturnLine instance) =>
 ReturnStatus _$ReturnStatusFromJson(Map<String, dynamic> json) => ReturnStatus(
   id: (json['id'] as num).toInt(),
   approvalStatus: json['approval_status'] as String,
-  name: json['name'] as String,
 );
 
 Map<String, dynamic> _$ReturnStatusToJson(ReturnStatus instance) =>
     <String, dynamic>{
       'id': instance.id,
       'approval_status': instance.approvalStatus,
-      'name': instance.name,
     };
 
 Invoice _$InvoiceFromJson(Map<String, dynamic> json) => Invoice(

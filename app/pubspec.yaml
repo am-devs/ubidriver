@@ -16,6 +16,7 @@ dependencies:
   path_provider: ^2.1.5
   json_annotation: ^4.9.0
   geolocator: ^14.0.2
+  audioplayers: ^6.5.1
 
 dev_dependencies:
   flutter_test:
@@ -41,3 +42,4 @@ flutter:
     - assets/login.png
     - assets/logo.png
     - assets/logo2.png
+    - assets/sound.mp3

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:gdd/components.dart';
 import 'package:gdd/models.dart';
 import 'package:gdd/services.dart';
@@ -7,7 +8,7 @@ import 'package:gdd/state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ApprovalPage extends StatefulWidget {
+class ApprovalPage extends StatefulWidget {  
   @override
   State<StatefulWidget> createState() => _ApprovalPageState();
 }
@@ -18,6 +19,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
   Timer? _pollingTimer;
   bool _isLoading = false;
   bool _approved = false;
+  final AudioPlayer _audioPlayer = AudioPlayer(); // Agregar el AudioPlayer
 
   @override
   void initState() {
@@ -37,6 +39,9 @@ class _ApprovalPageState extends State<ApprovalPage> {
             state.advanceState();
             AppSnapshot.fromMemento(state).withData(api).saveSnapshot();
 
+            // Reproducir el efecto de sonido antes de cancelar el timer
+            await _audioPlayer.play(AssetSource('sound.mp3'));
+            
             setState(() {
               _approved = true;
             });
@@ -52,7 +57,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
   @override
   void dispose() {
     _pollingTimer?.cancel();
-
+    _audioPlayer.dispose(); // No olvides liberar el recurso
     super.dispose();
   }
 

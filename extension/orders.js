@@ -57,6 +57,8 @@ function removeOrderAndCheckIfTheresMore(orderId) {
     }
 }
 
+const audio = new Audio(chrome.runtime.getURL("sound.mp3"));
+
 function generateDetail(data) {
     const $template = document.getElementById("detail");
     const $clone = $template.content.cloneNode(true);
@@ -107,6 +109,7 @@ function generateDetail(data) {
         }, (response) => {
             if (response.status) {
                 removeOrderAndCheckIfTheresMore(data.id);
+                audio.play();
             } else {
                 e.target.disabled = false;
 
