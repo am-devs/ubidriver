@@ -113,6 +113,7 @@ JOIN c_location cl ON cl.c_location_id = cbl.c_location_id""", locations)
 class ReturnStatus(BaseModel):
     id: int
     approval_status: str
+    name: str
 
     @staticmethod
     def search_for_invoice_id(invoice_id: int):

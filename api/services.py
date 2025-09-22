@@ -1,3 +1,4 @@
+from fastapi import WebSocket
 import requests
 from psycopg_pool import ConnectionPool
 from os import getenv
@@ -140,3 +141,24 @@ class OdooConnection:
             return None
 
         return data["result"]
+    
+class SocketManager:
+    "Pequeno broker hecho para manejar las conexiones por Websocket en la API"
+
+    def __init__(self):
+        self._active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self._active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        print(f"Disconnected from channel")
+
+        self._active_connections.remove(websocket)
+
+    async def broadcast(self, json: dict):
+        for conn in self._active_connections:
+            print("Sending JSON to subscriber")
+
+            await conn.send_json(json)

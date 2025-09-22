@@ -6,11 +6,15 @@
   "permissions": [
     "storage",
     "scripting",
-    "cookies"
+    "cookies",
+    "notifications",
+    "tabs"
   ],
   "host_permissions": [
     "http://*/*",
-    "https://*/*"
+    "https://*/*",
+    "ws://*/*",
+    "wss://*/*"
   ],
   "action": {
     "default_popup": "popup.html",

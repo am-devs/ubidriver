@@ -250,3 +250,57 @@ async function disapproveOrder(sessionId, orderId) {
   
   return data.result;
 }
+
+// Websocket
+let webSocket = null;
+
+function keepAlive() {
+  const keepAliveIntervalId = setInterval(
+    () => {
+      if (webSocket) {
+        webSocket.send(JSON.stringify({}));
+      } else {
+        clearInterval(keepAliveIntervalId);
+      }
+    },
+    20 * 1000 
+  );
+}
+
+function connect() {
+  webSocket = new WebSocket('ws://localhost:8084/v1/ws');
+
+  webSocket.onopen = (event) => {
+    console.log('websocket open');
+    keepAlive();
+  };
+
+  webSocket.onmessage = (event) => {
+    console.log(`websocket received message: ${event.data}`);
+
+    const { id, name } = JSON.parse(event.data);
+
+    if (name && id) {
+      chrome.notifications.create(
+        `odoo/ian.sale.return/${id}`,
+        {
+          iconUrl: "logo.png",
+          type: "basic",
+          title: 'Nueva aprobación',
+          message: `Se ha creado una nueva órden de devolución con la secuencia ${name}`
+        }
+      );
+    }
+  };
+
+  webSocket.onclose = (event) => {
+    console.log('websocket connection closed');
+    webSocket = null;
+  };
+}
+
+chrome.notifications.onClicked.addListener((id) => {
+  chrome.tabs.create({ url: odooUrl + id });
+});
+
+connect();

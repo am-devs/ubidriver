@@ -173,13 +173,13 @@
             appearance: none;
             border: none;
             padding: .75rem;
-            background-color: #D90000;
+            background-color: #b60000;
             border-radius: .3rem;
             width: 90%;
         }
 
         input::placeholder {
-            color: #9f0202;
+            color: #840000;
         }
     }
   </style>
@@ -203,22 +203,29 @@
                     <button value="approve">CONFIRMAR</button>
                     <button value="disapproved">RECHAZAR</button>
                 </span>
-                <p class="error">
-
-                </p>
+                <p class="error"></p>
             </article>
         </template>
         <template id="order">
             <article class="order">
                 <div class="order__header">
                     <img src="./logo.png" width="96" alt="Mary logo" />
-                    <h3></h3>
+                    <h3>
+                        <a target="_blank"></a>
+                    </h3>
                     <span></span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                     </svg>
                 </div>
             </article>
+        </template>
+        <template id="product">
+            <details>
+                <summary></summary>
+                <span></span>
+                <span></span>
+            </details>
         </template>
         <progress id="progress-bar" aria-label="Cargando..."></progress>
     </section>

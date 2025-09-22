@@ -73,33 +73,20 @@ function generateDetail(data) {
     
     const $root = $clone.querySelector(".order__details");
     const $buttons = $clone.querySelector(".order__details > span");
-
+    const $productTemplate = document.getElementById("product");
+    let $product;
+    
     data.lines.forEach((line) => {
-        const $details = document.createElement("details");
+        $product = $productTemplate.content.cloneNode(true);
 
-        $details.name = NAME;
+        $product.querySelector("details").name = NAME;
+        $product.querySelector("summary").textContent = line.product;
+        $product.querySelector("span:first-of-type").insertAdjacentText("beforebegin", `Motivo: `);
+        $product.querySelector("span:first-of-type").textContent = line.reason;
+        $product.querySelector("span:last-of-type").insertAdjacentText("beforebegin", ", Cantidad: ");
+        $product.querySelector("span:last-of-type").textContent = line.quantity.toString();
 
-        const $summary = document.createElement("summary");
-
-        $summary.appendChild(new Text(line.product));
-
-        $details.append($summary);
-        $details.append(new Text(`Motivo: `));
-
-        const $reason = document.createElement("span");
-
-        $reason.textContent = line.reason;
-
-        $details.append($reason);
-        $details.append(new Text(", Cantidad: "));
-
-        const $quantity = document.createElement("span");
-
-        $quantity.textContent = line.quantity.toString();
-
-        $details.append($quantity);
-
-        $root.insertBefore($details, $buttons);
+        $root.insertBefore($product, $buttons);
     });
 
     const $error = $clone.querySelector(".error");
@@ -151,6 +138,8 @@ function onFetchOrders(response) {
         return;
     }
 
+    $section.querySelector("progress").remove();
+
     const $fragment = document.createDocumentFragment();
     const $template = document.getElementById("order");
 
@@ -159,7 +148,9 @@ function onFetchOrders(response) {
     response.result.forEach((order) => {
         $clone = $template.content.cloneNode(true);
         
-        $clone.querySelector("h3").textContent = order.name;
+        $clone.querySelector("h3 a").textContent = order.name;
+        // Badly done
+        $clone.querySelector("h3 a").href = `http://localhost:8060/odoo/ian.sale.return/${order.id}`;
         $clone.querySelector("span").textContent = new Date(order.create_date + "Z").toLocaleString();
         
         const $article = $clone.querySelector("article");

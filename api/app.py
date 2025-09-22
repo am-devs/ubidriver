@@ -1,6 +1,7 @@
-from fastapi import Depends, FastAPI, Response, status
+from fastapi import Depends, FastAPI, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.security import OAuth2PasswordBearer
 from authentication import login, get_user_data
+from services import SocketManager
 import models
 import logging
 
@@ -50,14 +51,18 @@ def post_invoices_id_confirm(id: int, response: Response, coordinates: models.Po
             "error": str(e)
         }
     
+manager = SocketManager()
+
 @app.post("/invoices/{id}/return")
-def post_return(id: int, data: models.ReturnInvoice, response: Response, token: str = Depends(oauth2_scheme)):
+async def post_return(id: int, data: models.ReturnInvoice, response: Response, token: str = Depends(oauth2_scheme)):
     try:
         get_user_data(token)
 
         result = data.return_invoice(id)
 
         if result:
+            await manager.broadcast(result)
+
             response.status_code = status.HTTP_201_CREATED
 
             return result
@@ -152,3 +157,15 @@ def get_partner_coordinates(response: Response):
         return {
             "error": str(e)
         }
+    
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            await websocket.send_json(data)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
