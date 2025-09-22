@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         $form.elements.namedItem("password").value = "";
 
-        $p.textContent = "Credenciales inválidas, intente nuevamente";
+        $p.textContent = response.result;
 
         e.submitter.disabled = false;
       }

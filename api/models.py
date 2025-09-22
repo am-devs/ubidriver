@@ -254,8 +254,7 @@ SELECT DISTINCT
 	ado.name as organization,
 	ci.c_bpartner_location_id as customer_location,
     co.c_order_id as order_id
-FROM FTA_EntryTicket as et
-JOIN FTA_LoadOrder as lo ON et.FTA_Driver_ID = lo.FTA_Driver_ID AND lo.FTA_EntryTicket_ID = et.FTA_EntryTicket_ID
+FROM FTA_LoadOrder as lo
 JOIN FTA_LoadOrderLine as loline ON lo.FTA_LoadOrder_ID = loline.FTA_LoadOrder_ID 
 JOIN C_OrderLine as coline ON loline.C_OrderLine_ID = coline.C_OrderLine_ID
 JOIN C_Order as co ON coline.C_Order_ID = co.C_Order_ID
@@ -266,8 +265,8 @@ JOIN C_DocBaseType as baset on ctype.C_DocBaseType_ID = baset.C_DocBaseType_ID
 WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
 	AND ci.C_Order_ID IS NOT NULL
-  AND et.FTA_Driver_ID = %s
-	AND ci.is_confirm IS NULL
+    AND lo.FTA_Driver_ID = %s
+    AND ci.is_confirm IS NULL
 ORDER BY ci.dateacct::date DESC""", driver_id)
 
             invoices = {}

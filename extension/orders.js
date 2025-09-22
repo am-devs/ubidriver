@@ -2,7 +2,7 @@ let sessionId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     // Sesión
-    chrome.storage.sync.get(['sessionId'], (data) => {
+    chrome.storage.sync.get("sessionId", (data) => {
         if (data.sessionId) {
             console.log("Sesión es: ", sessionId = data.sessionId);
             
@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     }, onFetchOrders);
                 } else {
                     console.error(response.result);
+
+                    chrome.storage.sync.remove("sessionId");
 
                     window.location.href = "./popup.html";
                 }
@@ -144,7 +146,7 @@ function onFetchOrders(response) {
 
         $h2.textContent = "No hay nada que mostrar!";
 
-        $section.append($h2);
+        $section.querySelector("progress").replaceWith($h2);
 
         return;
     }
