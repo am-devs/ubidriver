@@ -1,16 +1,25 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:gdd/state.dart';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 
 class ApiService implements Memento {
-  static final _baseUrl = Uri.parse("https://chofer.iancarina.com.ve/v1");
-  // static final _baseUrl = Uri.parse("http://192.168.1.189:8084/v1");
+  static const _baseUrl = "https://chofer.iancarina.com.ve/v1";
+  // static final _baseUrl = "http://192.168.1.189:8084/v1";
 
   String _token = "";
+  late HttpClient _httpClient;
+
+  ApiService() {
+    _httpClient = HttpClient();
+
+    _httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
+      return true;
+    };
+  }
 
   bool get isLoggedIn => _token.isNotEmpty;
-  
+
   Future<bool> validateToken() async {
     if (_token.isEmpty) {
       return false;
@@ -34,22 +43,26 @@ class ApiService implements Memento {
 
     print(body);
 
-    var response = await http.post(
-      Uri.parse("$_baseUrl/login"),
-      headers: {"Content-Type": "application/json"},
-      body: body,
-    ).timeout(const Duration(seconds: 10));
+    try {
+      final request = await _httpClient.postUrl(Uri.parse("$_baseUrl/login"));
+      request.headers.set('Content-Type', 'application/json');
+      request.write(body);
 
-    Map<String, dynamic> data = jsonDecode(response.body);
+      final response = await request.close();
+      final responseBody = await response.transform(utf8.decoder).join();
 
-    if(data.containsKey('error')) {
-      print("Error $data");
+      Map<String, dynamic> data = jsonDecode(responseBody);
 
+      if(data.containsKey('error')) {
+        print("Error $data");
+        return false;
+      } else {
+        _token = data["client_secret"] as String;
+        return true;
+      }
+    } catch (e) {
+      print("Error en authenticate: $e");
       return false;
-    } else {
-      _token = data["client_secret"] as String;
-
-      return true;
     }
   }
 
@@ -58,49 +71,69 @@ class ApiService implements Memento {
   }
 
   Future<T> get<T>(String route) async {
-    var response = await http.get(
-      _baseUrl.resolve(route),
-      headers: {"Authorization": "Bearer $_token"}
-    ).timeout(const Duration(seconds: 10));
+    try {
+      final request = await _httpClient.getUrl(Uri.parse("$_baseUrl$route"));
+      request.headers.set('Authorization', 'Bearer $_token');
 
-    var data = jsonDecode(utf8.decode(response.bodyBytes));
+      final response = await request.close();
+      final responseBody = await response.transform(utf8.decoder).join();
 
-    if(data is Map && data.containsKey("error")) {
-      throw Exception(data);
-    } else {
-      print("Data ${data.runtimeType}");
+      var data = jsonDecode(responseBody);
 
-      return data;
+      if(data is Map && data.containsKey("error")) {
+        throw Exception(data);
+      } else {
+        print("Data ${data.runtimeType}");
+        return data;
+      }
+    } catch (e) {
+      print("Error en get: $e");
+      rethrow;
     }
   }
 
   Future<T> post<T>(String route, { Object? body }) async {
-    var response = await http.post(
-      _baseUrl.resolve(route),
-      body: body != null ? jsonEncode(body) : null,
-      headers: {"Authorization": "Bearer $_token", "Content-Type": "application/json"}
-    ).timeout(const Duration(seconds: 10));
+    HttpClientRequest? request;
 
-    print(jsonEncode(body));
+    try {
+      request = await _httpClient.postUrl(Uri.parse("$_baseUrl$route"));
+      request.headers.set('Authorization', 'Bearer $_token');
+      request.headers.set('Content-Type', 'application/json');
 
-    // Empty error response
-    if (response.bodyBytes.isEmpty && response.statusCode > 400) {
-      throw Exception("No se pudo postear nada");
-    }
+      if (body != null) {
+        request.write(jsonEncode(body));
+      }
 
-    print(response.body);
+      print(jsonEncode(body));
 
-    var data = jsonDecode(response.body);
+      final response = await request.close();
+      final responseBody = await response.transform(utf8.decoder).join();
 
-    if(response.statusCode >= 400 || (data is Map && data.containsKey("error"))) {
-      throw Exception(data);
-    } else {
-      print("Data: ${response.body}");
+      // Empty error response
+      if (responseBody.isEmpty && response.statusCode >= 400) {
+        throw Exception("No se pudo postear nada");
+      }
 
-      return data as T;
+      print(responseBody);
+
+      var data = jsonDecode(responseBody);
+
+      if(response.statusCode >= 400 || (data is Map && data.containsKey("error"))) {
+        throw Exception(data);
+      } else {
+        print("Data: $responseBody");
+        return data as T;
+      }
+    } catch (e) {
+      print("Error en post: $e");
+      rethrow;
+    } finally {
+      if (request != null) {
+        await request.close();
+      }
     }
   }
-  
+
   @override
   void loadFromSnapshot(AppSnapshot snapshot) {
     _token = snapshot.data["token"] ?? "";

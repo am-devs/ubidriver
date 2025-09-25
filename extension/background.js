@@ -1,5 +1,5 @@
 const ODOO_DATABASE = "portal_mary";
-const odooUrl = new URL("https://portalmary.iancarina.com.ve/");
+const odooUrl = new URL("https://portalmary.iancarina.com.ve");
 const apiUrl = new URL('wss://chofer.iancarina.com.ve/v1/ws');
 
 // const ODOO_DATABASE = "Test";
@@ -73,7 +73,9 @@ async function authenticate(username, password) {
   if (data.error) {
     throw new Error(data.error.data.message || 'Error de autenticación');
   }
-  
+
+  console.dir(data);
+
   const cookies = await chrome.cookies.getAll({url: odooUrl.toString()});
   const sessionCookie = cookies.find(c => c.name.includes('session_id'));
   

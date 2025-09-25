@@ -11,6 +11,7 @@
     "tabs"
   ],
   "host_permissions": [
+    "http://*/*",
     "https://*/*",
     "wss://*/*"
   ],

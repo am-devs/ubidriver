@@ -1,5 +1,5 @@
 from fastapi import Depends, FastAPI, Response, WebSocket, WebSocketDisconnect, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from authentication import login, get_user_data
 from services import SocketManager
@@ -173,7 +173,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.get("/static/extension")
 def get_extension():
-    return FileResponse("static/extension.crx", media_type="application/x-chrome-extension", filename="extension.crx")
+    return RedirectResponse("https://cloud.alimentosmary.org/s/8LH9soyFja4qRQw")
 
 @app.get("/static/application")
 def get_application():
