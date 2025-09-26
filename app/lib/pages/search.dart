@@ -16,13 +16,9 @@ class _SearchPageState extends State<SearchPage> {
   bool _loading = false;
   String _pattern = "";
 
-  List<Invoice> get _filteredInvoices {
-    if (_pattern.isEmpty) {
-      return _invoices;
-    } else {
-      return _invoices.where((i) => i.code.toLowerCase().contains(_pattern)).toList();
-    }
-  }
+  List<Invoice> get _filteredInvoices => _pattern.isNotEmpty
+    ? _invoices.where((i) => i.code.toLowerCase().contains(_pattern)).toList()
+    : _invoices;
 
   @override
   void initState() {
@@ -103,17 +99,17 @@ class _SearchPageState extends State<SearchPage> {
             )
           )
         else if (_filteredInvoices.isEmpty && !_loading)
-          Expanded(
+          const Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.search, size: 128, color: Colors.grey,),
-                const Text("No hay nada que mostrar", style: TextStyle(color: Colors.grey, fontSize: 24),)
+                Icon(Icons.search, size: 128, color: Colors.grey,),
+                Text("No hay nada que mostrar", style: TextStyle(color: Colors.grey, fontSize: 24),)
               ],
             ),
           )
         else
-          Center(child: CircularProgressIndicator(),),
+          const Center(child: CircularProgressIndicator(),),
         if (_filteredInvoices.isNotEmpty)
           SizedBox(
             height: 48,

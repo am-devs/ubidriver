@@ -4,7 +4,7 @@ import 'package:gdd/state.dart';
 import 'package:geolocator/geolocator.dart';
 
 class ApiService implements Memento {
-  static const _baseUrl = "https://chofer.iancarina.com.ve/v1";
+  static final _baseUrl = Uri.parse("https://chofer.iancarina.com.ve/v1");
   // static final _baseUrl = "http://192.168.1.189:8084/v1";
 
   String _token = "";

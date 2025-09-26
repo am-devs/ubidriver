@@ -44,7 +44,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 300,
+          height: 256,
           child: ListView.builder(
             shrinkWrap: true,
             padding: EdgeInsets.zero,
@@ -152,7 +152,7 @@ class InvoicePage extends StatelessWidget {
       Invoice? invoice = state.invoice;
 
       if (invoice == null) {
-        return AppScaffold(
+        return const AppScaffold(
           children: [
             Center(
               child: CircularProgressIndicator(),

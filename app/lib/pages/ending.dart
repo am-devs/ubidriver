@@ -63,7 +63,13 @@ class EndingPage extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(vertical: 32),
           child: ElevatedButton.icon(
-            style: appButtonStyle,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)
+              )
+            ),
             onPressed: () {
               Provider.of<AppState>(context, listen: false).resetState();
 

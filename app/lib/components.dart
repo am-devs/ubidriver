@@ -20,8 +20,8 @@ class _AppHeader extends StatelessWidget {
     return Container(
       height: 128,
       alignment: Alignment.bottomCenter,
-      padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+      decoration: const BoxDecoration(
         color: Colors.red,
         borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20))
       ),
@@ -114,14 +114,6 @@ class _AppHeader extends StatelessWidget {
   }
 }
 
-final ButtonStyle appButtonStyle = ElevatedButton.styleFrom(
-  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-  backgroundColor: Colors.red,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(12)
-  )
-);
-
 class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String label;
@@ -143,7 +135,6 @@ class AppButton extends StatelessWidget {
       child: Text(label, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600))
     );
   }
-
 }
 
 class AppBackButton extends StatelessWidget {

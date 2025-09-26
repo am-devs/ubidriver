@@ -64,16 +64,16 @@ class ResumePage extends StatelessWidget {
           child: RichText(
             text: TextSpan(
               text: 'Número de factura ',
-              style: TextStyle(color: Colors.grey.shade400, fontSize:24),
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 20),
               children: <TextSpan>[
-                TextSpan(text: invoice.code, style: TextStyle(color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold)),
+                TextSpan(text: invoice.code, style: TextStyle(color: Colors.red, fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
         ),
         SizedBox(
           width: MediaQuery.sizeOf(context).width,
-          height: MediaQuery.sizeOf(context).height * 0.4,
+          height: MediaQuery.sizeOf(context).height * 0.32,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 32),
             child: RichText(
