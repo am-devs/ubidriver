@@ -267,7 +267,7 @@ WHERE ci.docstatus = 'CO'
 	AND baset.DocBaseType ='ARI'
 	AND ci.C_Order_ID IS NOT NULL
     AND lo.FTA_Driver_ID = %s
-    AND ci.is_confirm IS NULL
+    AND ci.is_confirm = 'N'
 ORDER BY ci.dateacct::date DESC""", driver_id)
 
             invoices = {}

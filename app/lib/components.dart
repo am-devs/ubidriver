@@ -18,7 +18,7 @@ class _AppHeader extends StatelessWidget {
     final state = Provider.of<AppState>(context);
 
     return Container(
-      height: 128,
+      height: 120,
       alignment: Alignment.bottomCenter,
       padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
       decoration: const BoxDecoration(

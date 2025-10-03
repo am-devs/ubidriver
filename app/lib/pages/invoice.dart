@@ -44,7 +44,7 @@ class _InvoiceLineTableState extends State<_InvoiceLineTable> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 256,
+          height: 200,
           child: ListView.builder(
             shrinkWrap: true,
             padding: EdgeInsets.zero,
@@ -195,7 +195,7 @@ class InvoicePage extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 24, horizontal: 32),
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 32),
             child: Column(
               children: [
                 Align(
@@ -206,7 +206,7 @@ class InvoicePage extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                  padding: EdgeInsets.symmetric(vertical: 20),
                   child: SizedBox(
                     width: MediaQuery.sizeOf(context).width,
                     child: RichText(
