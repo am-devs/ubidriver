@@ -109,6 +109,8 @@ def post_login(data: dict, response: Response):
     except Exception as e:
         response.status_code = status.HTTP_403_FORBIDDEN
 
+        print(e)
+
         return {
             "error": str(e)
         }
